@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Wall - Specifiche Tecniche</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #58a6ff;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            margin-top: 40px;
+        }
+
+        code {
+            background-color: #161b22;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff7b72;
+        }
+
+        pre {
+            background-color: #161b22;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #30363d;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .tag.fe {
+            background-color: #d2a8ff;
+            color: #0d1117;
+        }
+
+        /* Frontend */
+        .tag.be {
+            background-color: #79c0ff;
+            color: #0d1117;
+        }
+
+        /* Backend */
+        .tag.data {
+            background-color: #ff7b72;
+            color: #0d1117;
+        }
+
+        /* Data */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #161b22;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        th {
+            background-color: #21262d;
+            color: #f0f6fc;
+        }
+
+        .alert {
+            background-color: rgba(210, 153, 34, 0.15);
+            border: 1px solid #d29922;
+            color: #e3b341;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📐 Pixel Wall - Specifiche Tecniche</h1>
+    <p>Documentazione tecnica dell'implementazione del sistema di Crowdfunding "Pixel Wall".</p>
+    <p><strong>Ultimo Aggiornamento:</strong> 04/01/2026</p>
+
+    <div class="alert">
+        <strong>⚠️ FILE AD USO INTERNO</strong><br>
+        Questa pagina contiene dettagli sensibili sulla struttura del sistema. Non pubblicare o condividere
+        esternamente.
+    </div>
+
+    <h2>1. Architettura del Sistema</h2>
+    <p>Il sistema è basato su un'architettura <strong>Serverless-like</strong> (senza database relazionale) utilizzando
+        file JSON flat per la persistenza dei dati, gestiti tramite PHP con lock atomici per garantire la consistenza
+        durante le scritture concorrenti.</p>
+
+    <ul>
+        <li><strong>Frontend:</strong> HTML5 Canvas, Vanilla JS, CSS3 (No Frameworks).</li>
+        <li><strong>Backend:</strong> PHP 8.x (API RESTful), Node.js (Script di manutenzione/reset).</li>
+        <li><strong>Pagamenti:</strong> Stripe PaymentIntent API (Verifica Server-side).</li>
+        <li><strong>Storage:</strong> JSON Files (Intera griglia e transazioni).</li>
+    </ul>
+
+    <h2>2. Struttura Dati (JSON)</h2>
+    <p>I dati risiedono nella sottocartella <code>Pixel_wall/data</code>.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome File</th>
+                <th>Tipo</th>
+                <th>Descrizione</th>
+                <th>Schema Esempio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>data/wall_data.json</code></td>
+                <td><span class="tag data">Data</span></td>
+                <td>Contiene lo stato visivo attuale della griglia.</td>
+                <td><code>{ "x,y": "#RRGGBB", ... }</code></td>
+            </tr>
+            <tr>
+                <td><code>data/wall_preset.json</code></td>
+                <td><span class="tag data">Config</span></td>
+                <td>Pixel immutabili (Logo MR) caricati al reset.</td>
+                <td><code>{ "x,y": "#RRGGBB" }</code></td>
+            </tr>
+            <tr>
+                <td><code>data/transactions.json</code></td>
+                <td><span class="tag data">Log</span></td>
+                <td>Registro storico di tutti i pagamenti validati.</td>
+                <td><code>[{ "id": "pi_...", "amount": 10.5, "date": "..." }]</code></td>
+            </tr>
+            <tr>
+                <td><code>data/pixel_owners.json</code></td>
+                <td><span class="tag data">Private</span></td>
+                <td>Associa le email degli utenti ai pixel posseduti.</td>
+                <td><code>{ "email@test.com": { "pixels": ["10,10"], "txns": [...] } }</code></td>
+            </tr>
+            <tr>
+                <td><code>data/winners.json</code></td>
+                <td><span class="tag data">Game</span></td>
+                <td>Elenco dei vincitori del Golden Pixel.</td>
+                <td><code>[{ "pixel": "100,50", "email": "...", "date": "..." }]</code></td>
+            </tr>
+            <tr>
+                <td><code>data/winners_silver.json</code></td>
+                <td><span class="tag data">Game</span></td>
+                <td>Elenco dei vincitori dei 50 Silver Pixel.</td>
+                <td><code>[{ "pixel": "...", "email": "...", "date": "..." }]</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>File Speciali</h3>
+    <ul>
+        <li><code>private/secret_gold_pixels.php</code>: Array PHP con le 10 coordinate Gold. Protetto.</li>
+        <li><code>private/secret_silver_pixels.php</code>: Array PHP con le 50 coordinate Silver. Protetto.</li>
+        <li><code>private/admin_winners_x9k2m.php</code>: Dashboard segreta per visualizzare i vincitori.</li>
+        <li><code>private/Stripe_keys_a7b2c9.php</code>: Chiavi API Stripe (Rinominate e spostate).</li>
+    </ul>
+
+    <h2>3. Flusso Funzionale</h2>
+
+    <h3>A. Rendering Griglia</h3>
+    <ol>
+        <li>Il client scarica <code>data/wall_preset.json</code> (base) e interroga <code>wall-api.php</code>
+            (sovrappone i
+            pixel utente).</li>
+        <li>Canvas HTML5 renderizza i pixel 1:1.</li>
+        <li>Zoom e Pan sono gestiti via trasformazioni di coordinate JS (senza ridisegno continuo del DOM).</li>
+        <li><strong>Ottimizzazione:</strong> Viene usato un <em>Offscreen Canvas</em> per cacheare i pixel statici.</li>
+    </ol>
+
+    <h3>B. Pagamento e Salvataggio (Critico)</h3>
+    <ol>
+        <li><strong>Fase 1 (Client):</strong> JS calcola l'area e i pixel, chiama Stripe per ottenere un
+            <code>clientSecret</code>.
+        </li>
+        <li><strong>Fase 2 (Stripe):</strong> Crea un <em>PaymentIntent</em> con metadata (numero pixel).</li>
+        <li><strong>Fase 3 (Conferma):</strong> Utente paga. Al successo, Stripe invia conferma al client.</li>
+        <li><strong>Fase 4 (Salvataggio Sicuro):</strong>
+            <ul>
+                <li>Il client invia i pixel + ID Transazione a <code>wall-api.php</code>.</li>
+                <li>Il server chiama le API di Stripe (Server-to-Server) usando la <code>Secret Key</code>.</li>
+                <li>Verifica che lo stato sia <code>succeeded</code>.</li>
+                <li>Verifica che il numero di pixel pagati corrisponda a quelli inviati.</li>
+                <li>Se OK, acquisisce un <strong>Lock Esclusivo (flock)</strong> su <code>data/wall_data.json</code> e
+                    scrive.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>C. Sistema Golden Pixel</h3>
+    <p>La logica di vittoria è <strong>Server-side</strong>. Durante il salvataggio dei pixel:</p>
+    <pre>
+$goldPixels = include 'private/secret_gold_pixels.php';
+$found = array_intersect($nuovi_pixel, $goldPixels);
+if ($found) {
+    // Registra vincitore in winners.json
+    // Restituisce isWinner = true al client
+}</pre>
+    <p>Il client mostra il modale di vittoria solo se il server conferma.</p>
+
+    <h3>D. Sistema Silver Pixel</h3>
+    <p>Funziona in parallelo al Gold. Se un pixel non è Gold, viene controllato nell'array Silver:</p>
+    <ul>
+        <li>50 pixel vincenti (generati per non sovrapporsi a Gold o Preset).</li>
+        <li>Restituisce <code>isSilverWinner</code> al client.</li>
+        <li>Attiva il modale "Silver Pixel Found" e l'icona aggiornata nel HUD.</li>
+    </ul>
+
+    <h2>4. Manutenzione e Reset</h2>
+    <p>È disponibile uno script Node.js per resettare l'ambiente in produzione (o test).</p>
+    <p><code>node Pixel_wall/scripts/reset_wall.js</code></p>
+    <p><strong>Cosa fa:</strong></p>
+    <ol>
+        <li>Ripristina <code>data/wall_data.json</code> allo stato del preset.</li>
+        <li>Svuota transazioni, log proprietari e vincitori (Gold e Silver).</li>
+        <li>Utilizza <code>scripts/generate-gold-pixels.php</code> per calcolare 10 coordinate Gold e 50 Silver (salvati
+            in <code>private/</code>, evitando le
+            aree
+            occupate dal preset).</li>
+        <li>Svuota <code>access_logs.json</code>.</li>
+    </ol>
+
+    <h2>6. Pagine Accessorie</h2>
+
+    <h3>A. Statistiche (stats.php)</h3>
+    <ul>
+        <li><strong>GeoIP & Flags:</strong> Integra <code>ip-api.com</code> per ottenere la nazione e mostra la bandiera
+            tramite <code>flagcdn.com</code>.</li>
+        <li><strong>Privacy:</strong> Maschera IP pubblici (es. <code>87.12.***.***</code>).</li>
+        <li><strong>UX:</strong> Grafici a torta con smart-labels (posizionate fuori se fetta &lt; 5%). Tabella
+            visitatori con paginazione "Show More".</li>
+    </ul>
+
+    <h3>B. Hall of Gold (winners.php)</h3>
+    <ul>
+        <li>Visualizza "Hall of Gold" e "Hall of Silver" in un'unica pagina.</li>
+        <li>Supporta deep-linking tramite anchor (<code>#silver</code>) per scroll automatico dal HUD.</li>
+        <li>Mostra statistiche in tempo reale (Contatori trovati/totali).</li>
+    </ul>
+
+    <h2>5. Versioning e Cache</h2>
+    <p>Per evitare problemi di cache sui browser degli utenti, le risorse critiche usano un parametro di versione
+        incrementale:</p>
+    <ul>
+        <li><code>style.css?v=51</code></li>
+        <li><code>pixel-wall.js?v=49</code></li>
+        <li><code>translations.js?v=7</code></li>
+    </ul>
+
+</body>
+
+</html>

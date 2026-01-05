@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <script type="text/javascript">
+        var _iub = _iub || [];
+        _iub.csConfiguration = { "askConsentAtCookiePolicyUpdate": true, "floatingPreferencesButtonDisplay": "bottom-right", "perPurposeConsent": true, "siteId": 3303418, "whitelabel": false, "cookiePolicyId": 30376018, "banner": { "acceptButtonDisplay": true, "closeButtonRejects": true, "customizeButtonDisplay": true, "explicitWithdrawal": true, "listPurposes": true, "position": "float-bottom-right", "rejectButtonDisplay": true } };
+        _iub.csLangConfiguration = { "it": { "cookiePolicyId": 30376018 } };
+    </script>
+    <script type="text/javascript" src="https://cs.iubenda.com/autoblocking/3303418.js"></script>
+    <script type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
+    <script>
+        // Analytics Tracking for Pixel Wall
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('../tracker.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ page: 'Pixel Wall', referrer: document.referrer })
+            }).catch(e => console.log('Tracker skipped'));
+        });
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Wall Crowdfunding | Madness Republic</title>
+    <meta name="description"
+        content="Contribuisci al crowdfunding disegnando sulla nostra Pixel Wall. Un pixel, un mattone per il nostro progetto.">
+
+    <style>
+        /* Mobile Header Fixes */
+        @media (max-width: 768px) {
+            .pixel-header {
+                padding: 10px 15px;
+            }
+
+            .logo-text {
+                font-size: 1.2rem;
+                /* Smaller text */
+            }
+
+            .right-side-controls {
+                top: 70px;
+                /* Push down below header */
+            }
+
+            /* Hide text if really small */
+            @media (max-width: 400px) {
+                .logo-text span {
+                    display: none;
+                }
+
+                .logo-text::after {
+                    content: 'MR';
+                    /* Abbreviation */
+                }
+            }
+        }
+    </style>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.madnessrepublic.com/Pixel_wall/">
+    <meta property="og:title" content="Pixel Wall - Madness Republic">
+    <meta property="og:description"
+        content="Disegna il tuo pixel e supporta la costruzione del nuovo centro sportivo! La tua firma rimarrà nella storia.">
+    <meta property="og:image" content="https://www.madnessrepublic.com/Images/Render/render_gen.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.madnessrepublic.com/Pixel_wall/">
+    <meta property="twitter:title" content="Pixel Wall - Madness Republic">
+    <meta property="twitter:description"
+        content="Disegna il tuo pixel e supporta la costruzione del nuovo centro sportivo!">
+    <meta property="twitter:image" content="https://www.madnessrepublic.com/Images/Render/render_gen.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;700&family=Source+Sans+Pro:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../style.css?v=52">
+    <link rel="icon" type="image/png" href="../Icons/favicon.png">
+    <script src="../translations.js?v=9"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        :root,
+        html,
+        body {
+            overflow: hidden !important;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            touch-action: manipulation;
+        }
+
+        /* Specific Styles for Pixel Wall */
+        .gold-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px dashed #FFD700;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .gold-box strong {
+            color: #FFD700;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .gold-box p {
+            margin-bottom: 0 !important;
+        }
+
+        .pixel-page {
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pixel-header {
+            padding: 10px 20px;
+            background: var(--header-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-opacity);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .pixel-container {
+            flex: 1;
+            position: relative;
+            background: #000000;
+            overflow: hidden;
+            /* Canvas pan logic handles movement */
+            cursor: crosshair;
+        }
+
+        #pixel-canvas {
+            image-rendering: pixelated;
+            display: block;
+            background-color: transparent;
+        }
+
+        /* Tools Toolbar */
+        .pixel-tools {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid var(--border-opacity);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            white-space: nowrap;
+            flex-wrap: nowrap;
+            min-width: max-content;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding-right: 15px;
+        }
+
+        .tool-group:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .color-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-circle.active {
+            border-color: #fff;
+            transform: scale(1.2);
+        }
+
+        .right-side-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 200;
+            width: 240px;
+        }
+
+        /* Welcome Modal Card Style */
+        #welcome-modal .welcome-card {
+            text-align: center;
+            background-color: var(--bg-card);
+
+            /* Border gradients - override any modal-content border */
+            border: none;
+
+            background-image:
+                linear-gradient(to right, var(--accent-yellow), var(--accent-orange)),
+                linear-gradient(to bottom, var(--accent-orange), var(--accent-red)),
+                linear-gradient(to left, var(--accent-red), var(--accent-purple)),
+                linear-gradient(to top, var(--accent-purple), var(--accent-yellow));
+
+            background-repeat: no-repeat;
+
+            /* Initial Positions */
+            background-position: top left, top right, bottom right, bottom left;
+
+            /* Initial Sizes (Hidden) */
+            background-size: 0% 3px, 3px 0%, 0% 3px, 3px 0%;
+        }
+
+        #welcome-modal .welcome-card.animate-border {
+            animation: welcomeBorderTrace 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes welcomeBorderTrace {
+            0% {
+                background-size: 0% 3px, 3px 0%, 0% 3px, 3px 0%;
+            }
+
+            25% {
+                background-size: 100% 3px, 3px 0%, 0% 3px, 3px 0%;
+            }
+
+            50% {
+                background-size: 100% 3px, 3px 100%, 0% 3px, 3px 0%;
+            }
+
+            75% {
+                background-size: 100% 3px, 3px 100%, 100% 3px, 3px 0%;
+            }
+
+            100% {
+                background-size: 100% 3px, 3px 100%, 100% 3px, 3px 100%;
+            }
+        }
+
+        .welcome-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .stats-panel {
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(15px);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-opacity);
+            color: white;
+        }
+
+        .stat-item {
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-family: var(--font-heading);
+            color: var(--accent-turquoise);
+        }
+
+        .buy-btn {
+            background: linear-gradient(45deg, var(--accent-orange), var(--accent-red));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(230, 50, 40, 0.4);
+        }
+
+        .zoom-controls {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 200;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(13, 17, 23, 0.8);
+            border: 1px solid var(--border-opacity);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: var(--accent-turquoise);
+            color: var(--bg-dark);
+        }
+
+        #nav-back {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        /* Pricing Info Box */
+        .pricing-info-box {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pricing-info-box:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-turquoise);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            display: none;
+            /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 2147483647 !important;
+            /* Max Z-Index */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #111;
+            border: 1px solid var(--accent-turquoise);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            /* Prevent taller than screen */
+            overflow-y: auto;
+            /* Enable scroll if content is long */
+            color: white;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 25px 20px;
+                /* Reduced vertical padding */
+                width: 95%;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--accent-red);
+        }
+
+        .modal-title {
+            font-family: var(--font-heading);
+            color: var(--accent-turquoise);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .modal-body p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        .modal-body strong {
+            color: white;
+        }
+
+        /* Mission Box Styling */
+        .mission-box {
+            padding: 15px;
+            background: linear-gradient(135deg, #ff4c1f, #00f0ff, #7000ff);
+            background-size: 200% 200%;
+            animation: vibrantGradient 5s ease infinite;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .mission-box:hover {
+            transform: scale(1.05);
+        }
+
+        .mission-box .stat-label {
+            color: white;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .mission-box p {
+            font-size: 0.7rem;
+            color: white;
+            font-weight: 500;
+            margin-top: 4px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes vibrantGradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Canvas Title Styling */
+        .canvas-title {
+            position: absolute;
+            transform-origin: bottom center;
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.05em;
+            z-index: 50;
+            pointer-events: none;
+            white-space: nowrap;
+            /* Animation for color cycling (Firefox Safe) */
+            animation: color-cycle 4s infinite alternate;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            /* Gradient text removed for cross-browser stability */
+
+            /* Initial hide until JS positions it */
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .canvas-title.visible {
+            opacity: 1;
+        }
+
+        @keyframes color-cycle {
+            0% {
+                color: var(--accent-yellow);
+                text-shadow: 0 0 10px rgba(255, 230, 0, 0.4);
+            }
+
+            33% {
+                color: var(--accent-orange);
+                text-shadow: 0 0 10px rgba(240, 145, 0, 0.4);
+            }
+
+            66% {
+                color: var(--accent-red);
+                text-shadow: 0 0 10px rgba(230, 50, 40, 0.4);
+            }
+
+            100% {
+                color: var(--accent-purple);
+                text-shadow: 0 0 10px rgba(130, 60, 140, 0.4);
+            }
+        }
+
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Toggle Button for Side Panel */
+        .toggle-panel-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            /* Visible across resolutions or just mobile? Usually just mobile needed but harmless on desktop */
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 0.7rem;
+            transition: transform 0.3s;
+        }
+
+        /* Minimized State Styles */
+        .right-side-controls.minimized {
+            background: rgba(13, 17, 23, 0.6);
+            /* More transparent */
+            padding: 10px;
+            width: auto;
+            min-width: 140px;
+        }
+
+        .right-side-controls.minimized .mission-box,
+        .right-side-controls.minimized .pricing-info-box,
+        .right-side-controls.minimized .buy-btn,
+        .right-side-controls.minimized .stat-label,
+        .right-side-controls.minimized div[style*="margin-top: 15px"] {
+            display: none !important;
+        }
+
+        /* Keep values visible but compacted */
+        .right-side-controls.minimized .stat-item {
+            margin-bottom: 2px;
+            text-align: right;
+            /* Compact align */
+        }
+
+        .right-side-controls.minimized .stat-value {
+            font-size: 0.9rem;
+            color: white;
+            /* Ensure visibility */
+        }
+
+        .right-side-controls.minimized .stat-item::before {
+            /* Add icons for context when labels are hidden */
+            content: '📐 ';
+            font-size: 0.8rem;
+        }
+
+        .right-side-controls.minimized .stat-item:nth-child(2)::before {
+            content: '💰 ';
+        }
+
+        @media (max-width: 768px) {
+            .canvas-title {
+                font-size: 1rem;
+                top: 70px;
+                width: 70%;
+                /* Give space for controls */
+            }
+
+            .right-side-controls {
+                width: auto;
+                max-width: 220px;
+                right: 10px;
+                top: 65px;
+                /* Moved down to avoid header overlap */
+                transform-origin: top right;
+                display: block !important;
+                /* Restore visibility */
+            }
+
+            .zoom-controls {
+                left: 10px;
+                top: 65px;
+                transform: scale(0.85);
+                transform-origin: top left;
+            }
+
+            /* Hide the toggle button on desktop if desired, but here we keep it universal or mobile only */
+
+            /* Adjust header layout */
+            .pixel-header {
+                justify-content: space-between;
+                padding: 10px;
+                gap: 5px;
+            }
+
+            /* Shrink logo slightly */
+            .logo img {
+                height: 30px !important;
+            }
+
+            /* Hide 'Homepage' text to save space, keep arrow? Or keep it compact */
+            #nav-back {
+                font-size: 0.8rem;
+            }
+
+            .pixel-tools {
+                position: fixed;
+                /* Reset ALL positioning */
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100% !important;
+                transform: none !important;
+
+                min-width: 0 !important;
+                max-width: none !important;
+
+                /* Dock Style */
+                border-radius: 20px 20px 0 0;
+                background: rgba(13, 17, 23, 0.95);
+                /* More opaque */
+                border: none;
+                border-top: 1px solid var(--accent-turquoise);
+
+                /* Padding handles safe area */
+                padding: 15px 15px max(15px, env(safe-area-inset-bottom)) 15px;
+
+                box-sizing: border-box;
+                gap: 15px;
+
+                justify-content: flex-start;
+                /* Or center if content fits */
+
+                overflow-x: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                z-index: 100;
+                /* Lower than modal (2147483647) */
+                box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+            }
+
+            /* LANDSCAPE MOBILE TWEAKS */
+            @media (orientation: landscape) {
+                .pixel-tools {
+                    width: auto;
+                    max-width: 600px;
+                    bottom: 10px;
+                    padding: 5px 15px;
+                    /* Slimmer */
+                }
+
+                .right-side-controls {
+                    transform: scale(0.7);
+                    /* Smaller side controls in landscape */
+                }
+            }
+
+            .pixel-tools::-webkit-scrollbar {
+                display: none;
+            }
+
+            .tool-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                flex-shrink: 0;
+                /* Prevent buttons from crushing */
+            }
+
+            /* Ensure Modals are on TOP of everything */
+            .modal-overlay {
+                z-index: 5000 !important;
+            }
+
+            /* Extra-Compact Modal for Mobile to avoid scroll */
+            .welcome-icon {
+                font-size: 1.2rem !important;
+                margin-bottom: 5px !important;
+            }
+
+            .modal-title {
+                font-size: 0.9rem !important;
+                margin-bottom: 4px !important;
+            }
+
+            .modal-body p {
+                font-size: 0.68rem !important;
+                line-height: 1.1 !important;
+                margin-bottom: 2px !important;
+            }
+
+            .modal-content {
+                padding: 8px 6px !important;
+                max-width: 98% !important;
+                max-height: 80vh;
+                overflow-y: auto;
+                border-width: 1px !important;
+            }
+
+            .buy-btn#ack-welcome {
+                margin-top: 6px !important;
+                padding: 5px 10px !important;
+                font-size: 0.72rem !important;
+            }
+
+            .gold-box {
+                margin-top: 6px !important;
+                padding: 5px !important;
+            }
+
+            .gold-box strong {
+                font-size: 0.75rem !important;
+                margin-bottom: 2px !important;
+            }
+
+            .gold-box p {
+                font-size: 0.65rem !important;
+                margin-bottom: 0 !important;
+                padding: 0 !important;
+            }
+
+
+            /* Community HUD mobile tweaks */
+            .community-hud {
+                top: 10px;
+                padding: 4px 10px;
+                gap: 8px;
+                transform: translateX(-50%) scale(0.9);
+                max-width: 95vw;
+                justify-content: center;
+            }
+
+            .hud-value {
+                font-size: 0.8rem;
+            }
+
+            .hud-icon {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Community Stats HUD - Desktop */
+        .community-hud {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 6px 15px;
+            border-radius: 50px;
+            border: 1px solid var(--border-opacity);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 500;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            white-space: nowrap;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hud-icon {
+            font-size: 1rem;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+        }
+
+        .hud-value {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .hud-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="pixel-page">
+    <div class="site-bg"></div>
+
+    <header class="pixel-header">
+        <a href="../index.html" class="logo">
+            <img src="../Images/logo.png" alt="Logo" style="height: 40px;">
+        </a>
+
+        <div class="header-links" style="display: flex; align-items: center; gap: 15px;">
+            <!-- Lang Toggle (Simple Text) -->
+            <button id="lang-toggle" data-i18n="lang-switch"
+                style="background:none; border:none; color:white; font-weight:bold; cursor:pointer;">EN</button>
+            <a href="../index.html" id="nav-back" data-i18n="pw-back"></a>
+        </div>
+    </header>
+
+    <main class="pixel-container" id="canvas-wrapper">
+        <!-- Community Stats HUD -->
+        <div class="community-hud">
+            <div class="hud-item">
+                <span class="hud-icon">🏆</span>
+                <span class="hud-value" id="total-raised-hud">€ 0.00</span>
+            </div>
+            <div class="hud-divider"></div>
+            <div class="hud-item">
+                <span class="hud-icon">🎨</span>
+                <span class="hud-value" id="total-pixels-hud">0</span>
+            </div>
+            <div class="hud-divider"></div>
+            <div class="hud-item" style="cursor: pointer;" onclick="openDetailsModal('gold')">
+                <span class="hud-icon">🪙</span>
+                <span class="hud-value" id="gold-found-hud">0/10</span>
+            </div>
+            <div class="hud-divider"></div>
+            <div class="hud-item" style="cursor: pointer;" onclick="openDetailsModal('silver')">
+                <span class="hud-icon" style="filter: grayscale(100%) contrast(1.2) brightness(0.7);">🪙</span>
+                <span class="hud-value" id="silver-found-hud">0/50</span>
+            </div>
+        </div>
+
+        <div class="zoom-controls">
+            <button class="zoom-btn" id="zoom-in">+</button>
+            <button class="zoom-btn" id="zoom-out">-</button>
+            <button class="zoom-btn" id="zoom-reset">⟲</button>
+        </div>
+
+        <!-- Floating Image Controls (Hidden by default) -->
+        <div id="floating-controls" class="floating-controls" style="display: none;">
+            <p style="color: white; font-size: 0.9rem; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);"
+                data-i18n="pw-sticker-instr">Posiziona l'immagine e conferma</p>
+            <div style="display: flex; gap: 15px;">
+                <button id="floating-cancel" class="buy-btn" style="background: #444;" data-i18n="pw-btn-cancel">❌
+                    Annulla</button>
+                <button id="floating-confirm" class="buy-btn" style="background: var(--accent-turquoise); color: #000;"
+                    data-i18n="pw-btn-confirm">✅ Conferma</button>
+            </div>
+        </div>
+        <style>
+            .floating-controls {
+                position: absolute;
+                bottom: 150px;
+                /* Above toolbar */
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                padding: 15px 25px;
+                border-radius: 20px;
+                border: 2px solid var(--accent-turquoise);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 1000;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            }
+
+            @media (max-width: 768px) {
+                .floating-controls {
+                    bottom: 100px;
+                    width: 80%;
+                }
+            }
+
+            /* Landscape Mobile Optimization */
+            @media (max-width: 900px) and (orientation: landscape) {
+                .floating-controls {
+                    bottom: 10px;
+                    /* Overlay toolbar */
+                    padding: 8px 15px;
+                    /* Compact padding */
+                    width: auto;
+                    min-width: 300px;
+                }
+
+                .floating-controls p {
+                    display: none;
+                    /* Hide instruction text to save space */
+                }
+            }
+        </style>
+
+        <div class="right-side-controls" id="right-panel">
+            <button id="toggle-controls" class="toggle-panel-btn">▼</button>
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="pw-area"></span>
+                    <span class="stat-value val-pixels-count" id="pixels-count">0 cm²</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="pw-contribution"></span>
+                    <span class="stat-value val-price-count" id="price-count">€ 0.00</span>
+                </div>
+
+                <div class="pricing-info-box" id="open-pricing-modal">
+                    <span class="stat-label" style="font-size: 0.65rem; color: var(--accent-turquoise);"
+                        data-i18n="pw-pricing-title"></span>
+                    <p style="font-size: 0.75rem; margin-top: 5px;" data-i18n="pw-land-tax"></p>
+                    <p style="font-size: 0.75rem;" data-i18n="pw-ink-fee"></p>
+                </div>
+
+                <button class="buy-btn" id="checkout-btn" style="margin-top: 15px; width: 100%;"
+                    data-i18n="pw-confirm"></button>
+            </div> <!-- End stats-panel -->
+
+            <div class="mission-box" id="open-mission-modal">
+                <span class="stat-label" data-i18n="pw-mission-label"></span>
+                <p data-i18n="pw-mission-text"></p>
+            </div>
+
+            <div class="mission-box" id="open-wall-modal"
+                style="margin-top: 10px; background: linear-gradient(135deg, #FFD700, #ff6600);">
+                <span class="stat-label" data-i18n="pw-wall-label" style="color: black; text-shadow: none;"></span>
+                <p data-i18n="pw-wall-text" style="color: black; text-shadow: none; font-weight: 600;"></p>
+            </div>
+
+            <!-- Last Contribution Box Removed (Drawn on Canvas) -->
+        </div> <!-- End right-side-controls -->
+
+        <!-- Wall of Fame Modal -->
+        <div class="modal-overlay" id="wall-modal">
+            <div class="modal-content"
+                style="max-width: 90vw; height: 80vh; padding: 10px; background: #000; border: 2px solid var(--accent-turquoise); display: flex; flex-direction: column; overflow: hidden;">
+                <span class="modal-close" id="close-wall-modal" style="z-index: 1000; color: white;">&times;</span>
+                <p data-i18n="pw-wall-intro"
+                    style="text-align: center; color: var(--text-secondary); margin-bottom: 5px; margin-top: 15px; font-size: 0.9rem;">
+                </p>
+                <iframe src="wordcloud.html" style="width: 100%; flex: 1; border: none; overflow: auto;"></iframe>
+            </div>
+        </div>
+
+        <!-- The actual drawing surface -->
+        <canvas id="pixel-canvas"></canvas>
+
+        <!-- Canvas Title -->
+        <!-- Canvas Title -->
+        <div class="canvas-title" data-i18n="canvas-title"></div>
+
+        <div class="pixel-tools" id="pixel-tools-bar">
+            <div class="tool-group">
+                <div class="color-circle active" style="background: #ff4d4d;" data-color="#ff4d4d"></div>
+                <div class="color-circle" style="background: #4dff88;" data-color="#4dff88"></div>
+                <div class="color-circle" style="background: #4da6ff;" data-color="#4da6ff"></div>
+                <div class="color-circle" style="background: #ffcc4d;" data-color="#ffcc4d"></div>
+                <div class="color-circle" style="background: #000000;" data-color="#000000"></div>
+                <div class="color-picker-wrapper" style="position: relative; display: flex; align-items: center;">
+                    <div class="color-circle" id="custom-color-btn"
+                        style="background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red); border: 2px solid rgba(255,255,255,0.2);"
+                        title="Scegli colore personalizzato"></div>
+                    <input type="color" id="color-picker"
+                        style="position: absolute; opacity: 0; width: 28px; height: 28px; cursor: pointer; left: 0;">
+                </div>
+            </div>
+            <div class="tool-divider"></div>
+
+            <div class="tool-group tool-draw-group">
+                <button class="buy-btn" style="background: var(--accent-turquoise);" id="tool-pan"
+                    data-i18n="tool-pan"></button>
+                <button class="buy-btn" id="tool-draw" data-i18n="tool-draw" style="background: #333;"></button>
+            </div>
+
+            <div class="tool-divider"></div>
+
+            <div class="tool-group">
+                <button class="buy-btn" style="background: #444;" id="tool-undo" title="Annulla ultimo pixel"
+                    data-i18n="tool-undo"></button>
+                <button class="buy-btn" style="background: #a33;" id="tool-clear" title="Cancella tutto"
+                    data-i18n="tool-clear"></button>
+            </div>
+            <div class="tool-group">
+                <button class="buy-btn" style="background: #2a9d8f;" id="tool-upload" title="Carica Immagine"
+                    data-i18n="tool-upload">🖼️</button>
+                <input type="file" id="file-input" accept="image/*" style="display: none;">
+            </div>
+        </div>
+    </main>
+
+    <!-- Mission Modal -->
+    <div class="modal-overlay" id="mission-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-mission-modal">&times;</span>
+            <div class="modal-title" data-i18n="pw-modal-vision-title"></div>
+            <div class="modal-body">
+                <img src="../Images/Render/real_wall.png" alt="Real Wall Render"
+                    style="width: 100%; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--accent-turquoise);">
+                <p data-i18n="pw-modal-vision-p1"></p>
+                <p data-i18n="pw-modal-vision-p2"></p>
+                <p data-i18n="pw-modal-vision-p3"></p>
+                <div
+                    style="margin-top: 20px; text-align: center; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+
+                    <p data-i18n="pw-modal-vision-tourism" style="font-style: italic; color: #fff;"></p>
+
+                    <a href="https://maps.app.goo.gl/x3qHV5TA2FzTdCSr6" target="_blank" class="btn btn-outline"
+                        style="color: var(--accent-yellow); border-color: var(--accent-yellow); text-decoration: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-family: var(--font-heading);"
+                        data-i18n="pw-vision-map-link"></a>
+
+                    <a href="https://www.iglesiasturismo.it/" target="_blank" class="btn btn-outline"
+                        style="color: var(--accent-turquoise); border-color: var(--accent-turquoise); text-decoration: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-family: var(--font-heading);"
+                        data-i18n="pw-vision-tourism-link"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div class="modal-overlay" id="pricing-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-pricing-modal">&times;</span>
+            <div class="modal-title" data-i18n="pw-modal-pricing-title"></div>
+            <div class="modal-body">
+                <p data-i18n="pw-modal-pricing-intro"></p>
+                <p data-i18n="pw-modal-pricing-p1"></p>
+                <p data-i18n="pw-modal-pricing-p2"></p>
+                <p data-i18n="pw-modal-pricing-p3"></p>
+                <p data-i18n="pw-modal-pricing-end"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Modal (Auto-open) -->
+    <div class="modal-overlay" id="welcome-modal">
+        <div class="welcome-card modal-content" style="border: none;">
+            <span class="modal-close" id="close-welcome-modal">&times;</span>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+                <div class="welcome-icon" style="margin-bottom: 0;">🚀</div>
+                <div class="modal-title" data-i18n="pw-welcome-title"
+                    style="color: var(--accent-yellow); margin-bottom: 0;"></div>
+            </div>
+            <div class="modal-body">
+                <p data-i18n="pw-welcome-intro"></p>
+                <p data-i18n="pw-welcome-upload-info"></p>
+
+                <div
+                    style="background: rgba(255, 215, 0, 0.1); border: 1px dashed #FFD700; padding: 10px; margin: 15px 0; border-radius: 8px;">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:5px; margin-bottom:5px;">
+                        <span style="font-size:1.2rem;">🪙</span>
+                        <strong style="color: #FFD700; text-transform:uppercase;" data-i18n="pw-gold-title"></strong>
+                        <span style="font-size:1.2rem; filter: grayscale(100%) contrast(1.2) brightness(0.7);">🪙</span>
+                    </div>
+                    <p data-i18n="pw-gold-text" style="font-size: 0.9rem; margin: 0; color: #eee;"></p>
+                </div>
+
+                <p data-i18n="pw-welcome-usage"></p>
+                <p data-i18n="pw-welcome-wall"></p>
+
+                <p style="margin-top: 8px;" data-i18n="pw-welcome-email-note"></p>
+
+                <p data-i18n="pw-welcome-conversion"
+                    style="color: var(--accent-turquoise); font-weight: bold; margin-top: 15px;"></p>
+
+
+            </div>
+            <button class="buy-btn" id="ack-welcome"
+                style="margin-top: 20px; width: 50%; margin-left: auto; margin-right: auto;"
+                data-i18n="pw-close"></button>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="modal-close" id="close-checkout-modal">&times;</span>
+            <div class="modal-title" style="text-align: center;" data-i18n="pw-confirm"></div>
+
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <p style="font-size: 1.5rem; color: var(--accent-turquoise);" id="checkout-total">€ 0.00</p>
+                    <p data-i18n="pw-sign-label" style="margin-top: 10px;"></p>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 5px;">
+
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <input type="email" id="signer-email" placeholder="La tua email (per ricevuta)"
+                            style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: white;">
+                        <p style="font-size: 0.7rem; color: #888; margin-top: 5px; text-align: left;">
+                            La tua email sarà usata solo per inviarti la ricevuta e per verificare la proprietà dei
+                            pixel.
+                            <a href="https://www.madnessrepublic.com/privacy" target="_blank"
+                                style="color: #00f0ff;">Privacy Policy</a>
+                        </p>
+                    </div>
+
+                    <!-- Stripe Elements Placeholder -->
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <img src="Stripe_logo.svg" alt="Powered by Stripe" style="height: 25px; opacity: 0.9;">
+                    </div>
+                    <div id="payment-element">
+                        <!-- Stripe.js injects here -->
+                    </div>
+
+                    <div id="payment-message" class="hidden"
+                        style="color: #ff4d4d; margin-top: 10px; text-align: center;">
+                    </div>
+
+                    <button class="buy-btn" id="submit-payment" style="width: 100%; margin-top: 20px;">
+                        <span id="button-text">Paga Ora</span>
+                        <div class="spinner hidden" id="spinner"></div>
+                </div>
+            </div>
+
+            <script src="pixel-wall.js?v=64"></script>
+            <script>
+                // Modal Logic
+                const pModal = document.getElementById('pricing-modal');
+                const mModal = document.getElementById('mission-modal');
+                const wModal = document.getElementById('welcome-modal');
+                const wallModal = document.getElementById('wall-modal'); // New
+
+                const openPricing = document.getElementById('open-pricing-modal');
+                const openMission = document.getElementById('open-mission-modal');
+                const openWall = document.getElementById('open-wall-modal'); // New
+
+                const closePricing = document.getElementById('close-pricing-modal');
+                const closeMission = document.getElementById('close-mission-modal');
+                const closeWelcome = document.getElementById('close-welcome-modal');
+                const closeWall = document.getElementById('close-wall-modal'); // New
+                const ackWelcome = document.getElementById('ack-welcome');
+
+                // Functions to handle modals
+                function showModal(m) {
+                    m.style.display = 'flex';
+                    setTimeout(() => m.classList.add('active'), 10);
+                }
+                function hideModal(m) {
+                    m.classList.remove('active');
+                    setTimeout(() => m.style.display = 'none', 300);
+                }
+
+                openPricing.onclick = (e) => { e.stopPropagation(); showModal(pModal); };
+                openMission.onclick = (e) => { e.stopPropagation(); showModal(mModal); };
+                openWall.onclick = (e) => {
+                    e.stopPropagation();
+                    const iframe = wallModal.querySelector('iframe');
+                    const introText = wallModal.querySelector('p[data-i18n="pw-wall-intro"]');
+                    if (iframe) iframe.src = "wordcloud.html";
+                    if (introText) introText.style.display = 'block';
+                    showModal(wallModal);
+                    showModal(wallModal);
+                }; // New
+
+                // Expose function for HUD clicks
+                window.openDetailsModal = (type) => {
+                    const iframe = wallModal.querySelector('iframe');
+                    const introText = wallModal.querySelector('p[data-i18n="pw-wall-intro"]');
+
+                    if (type === 'gold') {
+                        iframe.src = "winners.php";
+                        if (introText) introText.style.display = 'none';
+                    } else if (type === 'silver') {
+                        iframe.src = "winners.php#silver";
+                        if (introText) introText.style.display = 'none';
+                    } else {
+                        // Default Wall
+                        iframe.src = "wordcloud.html";
+                        if (introText) introText.style.display = 'block';
+                    }
+                    showModal(wallModal);
+                };
+
+                closePricing.onclick = () => hideModal(pModal);
+                closeMission.onclick = () => hideModal(mModal);
+                closeWall.onclick = () => hideModal(wallModal); // New
+
+                window.onclick = (event) => {
+                    if (event.target == pModal) hideModal(pModal);
+                    if (event.target == mModal) hideModal(mModal);
+                    if (event.target == wModal) hideModal(wModal);
+                    if (event.target == wallModal) hideModal(wallModal); // New
+                };
+
+                closeWelcome.onclick = () => hideModal(wModal);
+                ackWelcome.onclick = () => hideModal(wModal);
+
+                // Show Welcome Modal on Load (with slight delay for effect)
+                window.addEventListener('load', () => {
+                    setTimeout(() => {
+                        showModal(wModal);
+                        // Trigger animation manually to ensure it runs
+                        const card = wModal.querySelector('.welcome-card');
+                        if (card) {
+                            // Reset animation just in case
+                            card.classList.remove('animate-border');
+                            void card.offsetWidth; // Trigger reflow
+                            card.classList.add('animate-border');
+                        }
+                    }, 500);
+                });
+
+                // Clean session on first load of the new version if needed
+                if (!localStorage.getItem('pixel_wall_v4_graphic')) {
+                    localStorage.removeItem('madness_pixels');
+                    localStorage.removeItem('madness_wall_confirmed');
+                    localStorage.setItem('pixel_wall_v4_graphic', 'true');
+                    console.log("LocalStorage pulito per caricare la nuova grafica.");
+                }
+
+                // Language Switcher Logic
+                function setLanguage(lang) {
+                    const toggleBtn = document.getElementById('lang-toggle');
+                    document.querySelectorAll('[data-i18n]').forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        // Use global translations directly
+                        if (window.translations && window.translations[lang] && window.translations[lang][key]) {
+                            el.innerHTML = window.translations[lang][key];
+                        }
+                    });
+                    // Update Canvas Title specifically
+                    const titleEl = document.querySelector('.canvas-title');
+                    if (titleEl && window.translations && window.translations[lang] && window.translations[lang]["canvas-title"]) {
+                        titleEl.textContent = window.translations[lang]["canvas-title"];
+                    }
+
+                    document.documentElement.lang = lang;
+
+                    // Update Pixel Wall dynamic stats if present
+                    if (window.madnessWall && typeof window.madnessWall.updateStatusText === 'function') {
+                        window.madnessWall.updateStatusText();
+                    }
+
+                    localStorage.setItem('mr_lang', lang);
+                }
+
+                const langBtn = document.getElementById('lang-toggle');
+                if (langBtn) {
+                    langBtn.addEventListener('click', () => {
+                        const current = document.documentElement.lang || 'it';
+                        setLanguage(current === 'it' ? 'en' : 'it');
+                    });
+                }
+
+                // Initialize Lang
+                let savedLang = localStorage.getItem('mr_lang');
+                if (!savedLang) {
+                    const browserLang = navigator.language.split('-')[0];
+                    savedLang = browserLang === 'it' ? 'it' : 'en';
+                }
+                // Listen for close commands from iFrames (e.g. Wall of Fame)
+                window.addEventListener('message', (event) => {
+                    if (event.data === 'closeWallModal') {
+                        const modal = document.getElementById('wall-modal');
+                        if (modal) modal.style.display = 'none';
+                    }
+                });
+
+                setLanguage(savedLang);
+            </script>
+</body>
+
+</html>

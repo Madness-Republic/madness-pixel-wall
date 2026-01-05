@@ -1,0 +1,21 @@
+# Security: Never commit private keys or sensitive logic
+private/
+*.env
+*.pem
+
+# Dependencies
+vendor/
+node_modules/
+
+# Dynamic Data (Database) - CRITICAL: Do not commit user data!
+data/*.json
+# Exceptions: Keep the structure/presets if needed
+!data/wall_preset.json
+!data/.gitkeep
+
+# System files
+.DS_Store
+Thumbs.db
+error_log
+.idea/
+.vscode/
