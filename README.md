@@ -9,6 +9,7 @@ The **Pixel Wall** turns digital support into a permanent monument. It features 
 ## ✨ Key Features
 
 -   **Interactive Canvas Engine:** High-performance rendering using HTML5 Canvas. It employs an **Offscreen Cache Canvas** technique to pre-render thousands of confirmed pixels, ensuring smooth 60FPS interaction (panning and zooming) even as the wall grows.
+-   **Image-to-Pixel Conversion:** Integrated tool to upload logos, photos, or memes, automatically converting them into pixel art based on user-defined dimensions while maintaining aspect ratios.
 -   **Atomic Data Integrity:** Backend uses PHP's `flock()` for exclusive file locking during JSON updates. This ensures data consistency and prevents race conditions when multiple users contribute simultaneously.
 -   **Session Persistence:** Drafts are automatically saved to `LocalStorage`. Users can leave the page and return later to find their artwork exactly where they left it.
 -   **High-DPI & Pixel-Perfection:** Support for Retina displays via dynamic scaling (`devicePixelRatio`) and disabled image smoothing to maintain crisp, 1:1 pixel art quality.
