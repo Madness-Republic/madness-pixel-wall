@@ -8,7 +8,7 @@ The **Pixel Wall** turns digital support into a permanent monument. It features 
 
 ## ✨ Key Features
 
--   **Interactive Canvas Engine:** High-performance rendering using HTML5 Canvas with support for "Vanilla" JS (no heavy frameworks).
+-   **Interactive Canvas Engine:** High-performance rendering using HTML5 Canvas. It employs an **Offscreen Cache Canvas** technique to pre-render thousands of confirmed pixels, ensuring smooth 60FPS interaction (panning and zooming) even as the wall grows.
 -   **Hybrid Pricing Model:** Accurate server-side cost calculation based on both occupied area (Land Tax) and total pixels drawn (Ink Fee).
 -   **Treasure Hunt:** Gamified experience with hidden **Golden** and **Silver** pixels that reward users with prizes and shares of the final pool.
 -   **Security First:** Full Stripe API integration with server-side transaction verification and protection against data manipulation.
