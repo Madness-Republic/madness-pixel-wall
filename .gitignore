@@ -1,5 +1,8 @@
 # Security: Never commit private keys or sensitive logic
-private/
+private/*
+!private/*.example.php
+!private/index.php
+!private/.htaccess
 *.env
 *.pem
 
