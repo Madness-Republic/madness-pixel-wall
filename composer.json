@@ -1,0 +1,6 @@
+{
+    "version": "1.0.11",
+    "require": {
+        "stripe/stripe-php": "^19.1"
+    }
+}

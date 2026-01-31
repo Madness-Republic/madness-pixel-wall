@@ -1,0 +1,22 @@
+Order Deny,Allow
+Deny from all
+
+<Files "wall_preset.json">
+    Allow from all
+</Files>
+
+<Files "updates.json">
+    Allow from all
+</Files>
+
+# Allow public access to images
+<IfModule mod_authz_core.c>
+    <Directory "uploads">
+        Require all granted
+    </Directory>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+        Allow from all
+    </FilesMatch>
+</IfModule>

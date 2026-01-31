@@ -1,0 +1,358 @@
+/* Admin Styles v2.3.0 */
+:root {
+    --bg-dark: #0b0e14;
+    --bg-card: #161b22;
+    --bg-hover: #21262d;
+    --border: #30363d;
+    --accent: #1de9b6;
+    --text-main: #e6edf3;
+    --text-dim: #8b949e;
+    --danger: #ff4d4d;
+    --sidebar-width: 260px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.admin-layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo-text {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 16px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: all 0.2s;
+    gap: 12px;
+}
+
+.nav-item i {
+    width: 20px;
+}
+
+.nav-item:hover {
+    color: var(--text-main);
+    background-color: var(--bg-hover);
+}
+
+.nav-item.active {
+    color: var(--accent);
+    background-color: rgba(29, 233, 182, 0.05);
+    border-left: 3px solid var(--accent);
+}
+
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+    color: var(--danger);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Sidebar Footer Specifics */
+.sidebar-footer .nav-item {
+    justify-content: center;
+    width: 100%;
+}
+
+/* Content Area */
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 40px;
+    height: 100vh;
+}
+
+.tab-content {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.tab-content.active {
+    display: flex;
+    overflow-y: auto;
+}
+
+/* Tabs containing iframes should not have their own scrollbar */
+#news.active,
+#contributions.active,
+#winners.active {
+    overflow: hidden;
+}
+
+.content-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 15px;
+}
+
+.content-header h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+/* Stats Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-label {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+/* Forms */
+.admin-form {
+    max-width: 850px;
+    background: var(--bg-card);
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 14px 16px;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    color: white;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.25s ease-in-out;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+    border-color: #484f58;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #030406;
+    box-shadow: 0 0 0 4px rgba(29, 233, 182, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+}
+
+.branding-group {
+    background: #11151c;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.branding-group-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--accent);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: var(--bg-dark);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-info {
+    background: #29b6f6;
+    color: #0b0e14;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.admin-form .btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Iframes */
+.admin-iframe {
+    width: 100%;
+    flex: 1;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+}
+
+.loading {
+    color: var(--text-dim);
+    font-style: italic;
+    padding: 20px;
+}
+
+.help-text {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 10px;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 20px;
+}
+
+.tool-card {
+    background: var(--bg-card);
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.tool-card h3 {
+    margin-bottom: 10px;
+    color: var(--accent);
+}
+
+.tool-card p {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}

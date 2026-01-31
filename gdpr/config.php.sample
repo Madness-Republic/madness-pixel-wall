@@ -1,0 +1,36 @@
+<?php
+// Madness GDPR Consent System - Configuration File Template
+
+// 1. Company Information (For Policy Pages)
+$gdpr_company_name = 'Your Company Name';
+$gdpr_company_address = 'Your Address';
+$gdpr_company_vat = 'VAT Number';
+$gdpr_company_email = 'contact@email.com';
+
+// 2. Technical Settings
+$gdpr_ga4_id = ''; // Google Analytics 4 Measurement ID (G-XXXXXXX)
+$gdpr_cookie_duration = 365; // Days
+$gdpr_default_lang = 'en';
+$gdpr_enabled_languages = ['en', 'it'];
+$gdpr_privacy_url = 'privacy.php'; // Custom path to privacy policy (optional)
+
+// 3. Style Settings
+$gdpr_col_primary = '#f09100';
+$gdpr_col_accept_1 = '#f09100';
+$gdpr_col_accept_2 = '#ff4d4d';
+$gdpr_col_secondary = '#cccccc';
+$gdpr_col_bg = '#1e1e1e';
+$gdpr_col_text = '#ffffff';
+$gdpr_bg_opacity = 95;
+
+// 4. Text Settings (Fallback values if JSON key is missing)
+$gdpr_text_title_en = 'Cookie Policy';
+$gdpr_text_desc_en = 'We use cookies to improve your experience.';
+$gdpr_text_title_it = 'Informativa Cookie';
+$gdpr_text_desc_it = 'Utilizziamo i cookie per migliorare la tua esperienza.';
+
+// 5. Branding (MANDATORY per License)
+// Modifying these lines to hide branding is a violation of the license.
+$gdpr_enable_branding = true;
+$gdpr_brand_name = 'Madness GDPR Consent System v1.2.1';
+?>

@@ -1,0 +1,20 @@
+{
+    "wall": {
+        "width": 1000,
+        "height": 400,
+        "use_preset": true,
+        "preset_padding": 4
+    },
+    "pricing": {
+        "land_rate_cents": 20,
+        "ink_rate_cents": 30,
+        "stripe_fixed_cents": 25,
+        "stripe_percent": 0.015,
+        "min_charge_cents": 50
+    },
+    "gamification": {
+        "gold_count": 10,
+        "silver_count": 50
+    },
+    "maintenance_mode": false
+}

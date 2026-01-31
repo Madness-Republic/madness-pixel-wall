@@ -1,0 +1,116 @@
+/* Madness GDPR Policy Default Styles
+   Uses variables defined in banner.php (from Admin Config)
+*/
+
+.policy-container {
+    padding-top: 100px;
+    padding-bottom: 80px;
+    max-width: 900px;
+    margin: 0 auto;
+    color: var(--gdpr-text, #ffffff);
+    min-height: 80vh;
+    font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+}
+
+.policy-content {
+    background: var(--gdpr-bg, #1e1e1e);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.policy-content h1 {
+    font-family: var(--font-heading, inherit);
+    color: var(--gdpr-primary, #f09100);
+    margin-bottom: 10px;
+    font-size: 2.2rem;
+    line-height: 1.2;
+}
+
+.policy-content .last-updated {
+    font-size: 0.9rem;
+    color: var(--gdpr-secondary, #cccccc);
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 20px;
+}
+
+.policy-content h2 {
+    color: var(--gdpr-accent, #1de9b6);
+    margin-top: 40px;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.policy-content h3 {
+    color: var(--gdpr-text, #ffffff);
+    margin-top: 25px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.policy-content p,
+.policy-content li {
+    line-height: 1.7;
+    color: var(--gdpr-secondary, #cccccc);
+    margin-bottom: 15px;
+}
+
+.policy-content ul {
+    padding-left: 20px;
+    margin-bottom: 20px;
+}
+
+.policy-content strong {
+    color: var(--gdpr-text, #ffffff);
+}
+
+.policy-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85rem;
+    opacity: 0.7;
+    color: var(--gdpr-secondary, #cccccc);
+}
+
+/* Language Tabs style if used */
+.policy-lang-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.policy-lang-btn {
+    background: transparent;
+    border: 1px solid var(--gdpr-secondary, #cccccc);
+    color: var(--gdpr-secondary, #cccccc);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.policy-lang-btn:hover,
+.policy-lang-btn.active {
+    border-color: var(--gdpr-primary, #f09100);
+    color: var(--gdpr-primary, #f09100);
+}
+
+@media (max-width: 768px) {
+    .policy-container {
+        padding-top: 80px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .policy-content {
+        padding: 25px;
+    }
+
+    .policy-content h1 {
+        font-size: 1.8rem;
+    }
+}

@@ -1,0 +1,3 @@
+[submodule "gdpr"]
+	path = gdpr
+	url = https://github.com/Madness-Republic/madness-gdpr-consent-system.git

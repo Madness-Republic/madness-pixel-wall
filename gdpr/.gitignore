@@ -1,0 +1,9 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/consent_*.csv
+
+# Security
+config.php

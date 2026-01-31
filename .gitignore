@@ -1,0 +1,34 @@
+# Security: Never commit private keys or sensitive logic
+private/*
+# Explicitly ignore randomized secret files (extra safety)
+private/secret_*_pixels_*.php
+private/Stripe_keys_*.php
+private/admin_winners_*.php
+!private/*.example.php
+!private/index.php
+!private/.htaccess
+*.env
+*.pem
+
+# Dependencies
+vendor/
+node_modules/
+
+# Dynamic Data (Database) - CRITICAL: Do not commit user data!
+data/*.json
+# Exceptions: Keep the structure/presets if needed
+!data/wall_preset.json
+!data/updates.json
+!data/settings.json
+data/uploads/*
+!data/uploads/.gitkeep
+!data/.gitkeep
+
+# System files
+.DS_Store
+Thumbs.db
+error_log
+.idea/
+.vscode/
+*.lock
+
