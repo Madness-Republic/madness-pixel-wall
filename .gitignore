@@ -32,3 +32,12 @@ error_log
 .vscode/
 *.lock
 
+# Copies and backups
+* (Copia)*
+*.zip
+*.csv
+*.tgz
+*.gz
+*.sql
+*.log
+
