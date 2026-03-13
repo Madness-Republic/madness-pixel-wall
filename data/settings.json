@@ -16,5 +16,9 @@
         "gold_count": 10,
         "silver_count": 50
     },
-    "maintenance_mode": false
+    "maintenance_mode": false,
+    "tracking": {
+        "ga4_id": "G-5HL3QJT8MT",
+        "google_ads_id": "AW-17847747259"
+    }
 }

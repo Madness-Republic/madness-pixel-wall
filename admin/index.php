@@ -36,7 +36,7 @@ if (file_exists($envPath)) {
 // Handle Logout
 if (isset($_GET['logout'])) {
     session_destroy();
-    header("Location: index.php");
+    header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
@@ -45,7 +45,7 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['password'])) {
     if ($_POST['password'] === $ADMIN_PASSWORD) {
         $_SESSION['admin_logged_in'] = true;
-        header("Location: /admin/index.php");
+        header("Location: " . $_SERVER['PHP_SELF']);
         exit;
     } else {
         $error = "Password Errata.";
@@ -153,9 +153,10 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Pixel Wall Admin</title>
-    <base href="/admin/">
+
     <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
-    <link rel="stylesheet" href="admin-style.css?v=2.3.0">
+    <?php $adminBase = rtrim(dirname($_SERVER['PHP_SELF']), '/'); ?>
+    <link rel="stylesheet" href="<?php echo $adminBase; ?>/admin-style.css?v=2.3.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -171,6 +172,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                 </a>
                 <a href="#settings" class="nav-item" data-tab="settings">
                     <i class="fas fa-cogs"></i> <span data-i18n="settings">Configurazione</span>
+                </a>
+                <a href="#visitors" class="nav-item" data-tab="visitors">
+                    <i class="fas fa-users"></i> <span data-i18n="visitors">Visitatori</span>
                 </a>
                 <a href="#gamification" class="nav-item" data-tab="gamification">
                     <i class="fas fa-trophy"></i> <span data-i18n="gamification">Gamification</span>
@@ -245,6 +249,26 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                     <form id="settings-form" class="admin-form">
                         <div class="loading">Caricamento impostazioni...</div>
                     </form>
+
+                    <!-- AD GRANTS / TRACKING CONFIG -->
+                    <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                        <h3 style="color: var(--text-color); margin-bottom: 15px;">
+                            <i class="fas fa-chart-line" style="color: var(--accent);"></i> Google Ad Grants & Analytics
+                        </h3>
+                        <form id="tracking-form" class="admin-form">
+                            <div class="form-group">
+                                <label>Google Analytics 4 ID (G-XXXXXX)</label>
+                                <input type="text" id="ga4-id" placeholder="G-..." style="font-family: monospace;">
+                            </div>
+                            <div class="form-group">
+                                <label>Google Ads Conversion ID (AW-XXXXXX/Label)</label>
+                                <input type="text" id="google-ads-id" placeholder="AW-..."
+                                    style="font-family: monospace;">
+                                <small style="color: #666;">Incolla l'ID completo o ID/Label per la conversione.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">SALVA TRACKING</button>
+                        </form>
+                    </div>
                 </div>
             </section>
 
@@ -281,15 +305,19 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
             <!-- Other placeholders for tabs -->
             <section id="news" class="tab-content">
-                <iframe src="admin_log.php" class="admin-iframe"></iframe>
+                <iframe src="<?php echo $adminBase; ?>/admin_log.php" class="admin-iframe"></iframe>
+            </section>
+
+            <section id="visitors" class="tab-content">
+                <iframe src="<?php echo $adminBase; ?>/admin_visitors.php" class="admin-iframe"></iframe>
             </section>
 
             <section id="contributions" class="tab-content">
-                <iframe src="admin_contributions.php" class="admin-iframe"></iframe>
+                <iframe src="<?php echo $adminBase; ?>/admin_contributions.php" class="admin-iframe"></iframe>
             </section>
 
             <section id="winners" class="tab-content">
-                <iframe src="admin_winners.php" class="admin-iframe"></iframe>
+                <iframe src="<?php echo $adminBase; ?>/admin_winners.php" class="admin-iframe"></iframe>
             </section>
 
             <section id="branding" class="tab-content">
@@ -348,8 +376,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         </main>
     </div>
 
-    <script src="admin-lang.js?v=2.3.0"></script>
-    <script src="admin-logic.js?v=2.3.0"></script>
+    <script src="<?php echo $adminBase; ?>/admin-lang.js?v=2.3.2"></script>
+    <script src="<?php echo $adminBase; ?>/admin-logic.js?v=2.3.2"></script>
 </body>
 
 </html>

@@ -64,18 +64,28 @@ class ConsentManager {
 
     // Actual script injection (Only after consent or if already granted)
     loadGtagScript() {
-        if (!this.config.ga4_id || document.getElementById('gdpr-gtag-script')) return;
+        if (document.getElementById('gdpr-gtag-script')) return;
+        const ga4Id = this.config.ga4_id;
+        const adsId = this.config.google_ads_id;
+        if (!ga4Id && !adsId) return;
 
+        const mainId = ga4Id || adsId;
         const script = document.createElement('script');
         script.id = 'gdpr-gtag-script';
         script.async = true;
-        script.src = `https://www.googletagmanager.com/gtag/js?id=${this.config.ga4_id}`;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${mainId}`;
         document.head.appendChild(script);
 
-        window.gtag('config', this.config.ga4_id, {
-            'anonymize_ip': true,
-            'cookie_flags': 'SameSite=Lax;Secure'
-        });
+        if (ga4Id) {
+            window.gtag('config', ga4Id, {
+                'anonymize_ip': true,
+                'cookie_flags': 'SameSite=Lax;Secure'
+            });
+        }
+
+        if (adsId) {
+            window.gtag('config', adsId);
+        }
     }
 
     // Sync Checkboxes with current consent state
@@ -152,7 +162,7 @@ class ConsentManager {
             body: JSON.stringify({
                 consent_id: prefs.consent_id,
                 preferences: prefs
-            })
+              })
         }).catch(err => console.error("GDPR Log Error:", err));
     }
 
@@ -202,8 +212,8 @@ class ConsentManager {
 
         window.gtag('consent', 'update', gcmState);
 
-        // If analytics granted, ensure script is loaded
-        if (prefs.analytics) {
+        // If analytics or marketing granted, ensure script is loaded
+        if (prefs.analytics || prefs.marketing) {
             this.loadGtagScript();
         }
 
@@ -408,12 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // If consent exists, show floating button again
             if (window.ConsentManager.hasConsent()) {
                 floatBtn.style.display = 'flex';
-            } else {
-                // If closed without consent (e.g. via X), maybe show banner? 
-                // Currently X just closes modal. Let's assume banner is behind it or we return to banner state?
-                // For now, simple close. The banner should still be visible if it wasn't hidden by saveConsent.
-                // Actually, if we opened modal from Banner, Banner stays open behind?
-                // Design choice: Modal overlays everything.
             }
         });
     }

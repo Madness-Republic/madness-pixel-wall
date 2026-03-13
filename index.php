@@ -11,27 +11,52 @@ require_once 'includes/security_headers.php';
     <meta name="description"
         content="Contribuisci al crowdfunding disegnando sulla nostra Pixel Wall. Un pixel, un mattone per il nostro progetto.">
 
+    <?php
+    // LOAD SETTINGS FOR TRACKING
+    $settingsPath = __DIR__ . '/data/settings.json';
+    $settings = file_exists($settingsPath) ? json_decode(file_get_contents($settingsPath), true) : [];
+    $ga4_id = $settings['tracking']['ga4_id'] ?? '';
+    // We also expose the Google Ads ID for conversion events if needed
+    $ads_id = $settings['tracking']['google_ads_id'] ?? '';
+    ?>
+
     <script nonce="<?php echo $nonce; ?>">
         window.APP_VERSION = "<?php echo file_exists('VERSION') ? trim(file_get_contents('VERSION')) : '1.3.1'; ?>";
-        // Analytics Tracking for Pixel Wall (Consent Aware)
-        document.addEventListener('DOMContentLoaded', () => {
-            const track = () => {
-                if (window.ConsentManager && window.ConsentManager.hasConsent('analytics')) {
-                    const trackerPath = document.location.port === '8080' ? 'tracker.php' : '../tracker.php';
-                    fetch(trackerPath, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ page: 'Pixel Wall', referrer: document.referrer })
-                    }).catch(e => console.log('Tracker skipped'));
-                }
-            };
-            // Track if already consented, otherwise wait for event
-            if (window.ConsentManager && window.ConsentManager.hasConsent('analytics')) {
-                track();
-            }
-            // Also listen for consent updates
-            window.addEventListener('gdpr-consent-updated', track);
+        window.GA4_ID = "<?php echo htmlspecialchars($ga4_id); ?>";
+        window.ADS_ID = "<?php echo htmlspecialchars($ads_id); ?>";
+    </script>
+
+    <!-- Google tag (gtag.js) - Static for verification -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($ads_id ?: $ga4_id); ?>"
+        nonce="<?php echo $nonce; ?>"></script>
+    <script nonce="<?php echo $nonce; ?>">
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        window.gtag = gtag; // Explicitly make it global
+
+        // 1. Consent Mode Default (Advanced)
+        // Set defaults BEFORE any config calls
+        gtag('consent', 'default', {
+            'ad_storage': 'denied',
+            'ad_user_data': 'denied',
+            'ad_personalization': 'denied',
+            'analytics_storage': 'denied',
+            'wait_for_update': 500
         });
+
+        gtag('js', new Date());
+
+        // 2. Initial Config
+        if (window.ADS_ID) {
+            gtag('config', window.ADS_ID);
+        }
+        if (window.GA4_ID) {
+            gtag('config', window.GA4_ID, { 'anonymize_ip': true });
+        }
+    </script>
+
+    <script nonce="<?php echo $nonce; ?>">
+        // Tracking state is handled and updated by ConsentManager (gdpr/assets/js/consent_manager.js)
     </script>
 
 
@@ -40,7 +65,7 @@ require_once 'includes/security_headers.php';
     <meta property="og:url" content="https://www.madnessrepublic.com/pixelwall/">
     <meta property="og:title" content="Pixel Wall - Madness Republic">
     <meta property="og:description"
-        content="Disegna il tuo pixel e supporta la costruzione del nuovo centro sportivo! La tua firma rimarrà nella storia.">
+        content="Disegna il tuo pixel e supporta la costruzione del nuovo centro sportivo! La tua firma rimarrà nell'opera.">
     <meta property="og:image" content="https://www.madnessrepublic.com/pixelwall/assets/images/render_gen.jpg">
 
     <!-- Twitter -->
@@ -55,7 +80,7 @@ require_once 'includes/security_headers.php';
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;700&family=Source+Sans+Pro:wght@400;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/pixel-wall.css?v=2.3.0">
+    <link rel="stylesheet" href="assets/css/pixel-wall.css?v=2.3.2">
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
 
     <?php
@@ -66,8 +91,6 @@ require_once 'includes/security_headers.php';
         $styleConfig = $brandingData['style_config'] ?? [];
     }
 
-    // Only output styles if we have config or want to enforce defaults via JS logic, 
-    // but here we only override if set, or use defaults for consistency if file exists.
     if (!empty($styleConfig)) {
         $s_modal_bg_hex = $styleConfig['modal_bg_color'] ?? '#111111';
         $s_modal_opacity = $styleConfig['modal_opacity'] ?? '0.95';
@@ -106,7 +129,6 @@ require_once 'includes/security_headers.php';
                 box-shadow: 0 0 20px rgba(0, 0, 0, 0.5) !important;
             }
 
-            /* Specific override to reset welcome card gradient if needed */
             #welcome-modal .welcome-card {
                 background: var(--bs-modal-bg) !important;
                 border: 1px solid var(--bs-modal-border) !important;
@@ -119,12 +141,7 @@ require_once 'includes/security_headers.php';
                 color: var(--bs-modal-border) !important;
             }
 
-
-
-            /* Buttons */
             <?php if (!empty($styleConfig['btn_primary_bg'])): ?>
-
-                /* General Primary Buttons */
                 .buy-btn,
                 .btn-primary {
                     background:
@@ -136,13 +153,11 @@ require_once 'includes/security_headers.php';
                     border: 1px solid rgba(255, 255, 255, 0.1) !important;
                 }
 
-                /* Tool Buttons (Unselected) - Force Dark */
                 .pixel-tools .buy-btn {
                     background: #333 !important;
                     color: #fff !important;
                 }
 
-                /* Tool Buttons (Selected) - Force Primary */
                 .pixel-tools .buy-btn.active-tool {
                     background:
                         <?php echo $styleConfig['btn_primary_bg']; ?>
@@ -155,7 +170,6 @@ require_once 'includes/security_headers.php';
 
             <?php endif; ?>
 
-            /* Mission / Vision Box */
             <?php if (!empty($styleConfig['box_vision_bg'])): ?>
                 #open-mission-modal.mission-box {
                     background:
@@ -166,7 +180,6 @@ require_once 'includes/security_headers.php';
 
             <?php endif; ?>
 
-            /* Wall of Fame Box */
             <?php if (!empty($styleConfig['box_wall_bg'])): ?>
                 #open-wall-modal.mission-wall-box,
                 #open-wall-modal.mission-box {
@@ -178,7 +191,6 @@ require_once 'includes/security_headers.php';
 
             <?php endif; ?>
 
-            /* Title Gradient Animation Override */
             <?php if (!empty($styleConfig['title_col_1'])):
                 $c1 = $styleConfig['title_col_1'];
                 $c2 = $styleConfig['title_col_2'] ?? $c1;
@@ -193,7 +205,6 @@ require_once 'includes/security_headers.php';
                         text-shadow: 0 0 10px
                             <?php echo $c1; ?>
                             66;
-                        /* 66 = 40% opacity approx */
                     }
 
                     33% {
@@ -239,20 +250,15 @@ require_once 'includes/security_headers.php';
         </a>
 
         <div class="header-links header-links-wrapper">
-            <!-- News / Dev Log -->
             <div id="open-diary-btn" class="diary-btn" title="Dev Log">
-                <div class="diary-dot">
-                </div>
+                <div class="diary-dot"></div>
                 <span data-i18n="pw-news" class="diary-label">PIXEL NEWS</span>
             </div>
-            <!-- Lang Toggle (Simple Text) -->
             <button id="lang-toggle" data-i18n="lang-switch" class="lang-toggle-btn">EN</button>
         </div>
     </header>
-    </header>
 
     <main class="pixel-container" id="canvas-wrapper">
-        <!-- Community Stats HUD -->
         <div class="community-hud">
             <div class="hud-item">
                 <span class="hud-icon">🏆</span>
@@ -282,12 +288,10 @@ require_once 'includes/security_headers.php';
             <button class="zoom-btn" id="focus-mode" title="Focus Highlight">🌟</button>
         </div>
 
-        <!-- Floating Image Controls (Hidden by default) -->
         <div id="floating-controls" class="floating-controls hidden">
             <p class="controls-text" data-i18n="pw-sticker-instr">Posiziona l'immagine e conferma</p>
             <div class="controls-buttons">
-                <button id="floating-cancel" class="buy-btn btn-cancel" data-i18n="pw-btn-cancel">❌
-                    Annulla</button>
+                <button id="floating-cancel" class="buy-btn btn-cancel" data-i18n="pw-btn-cancel">❌ Annulla</button>
                 <button id="floating-confirm" class="buy-btn btn-confirm" data-i18n="pw-btn-confirm">✅ Conferma</button>
             </div>
         </div>
@@ -311,9 +315,8 @@ require_once 'includes/security_headers.php';
                 </div>
 
                 <button class="buy-btn checkout-btn" id="checkout-btn" data-i18n="pw-confirm"></button>
-            </div> <!-- End stats-panel -->
+            </div>
 
-            <!-- Additional Interactions -->
             <div class="mission-box" id="open-mission-modal">
                 <span class="stat-label" data-i18n="pw-mission-label"></span>
                 <p data-i18n="pw-mission-text"></p>
@@ -323,31 +326,24 @@ require_once 'includes/security_headers.php';
                 <span class="stat-label mission-wall-label" data-i18n="pw-wall-label"></span>
                 <p data-i18n="pw-wall-text" class="mission-wall-text"></p>
             </div>
+        </div>
 
-            <!-- Last Contribution Box Removed (Drawn on Canvas) -->
-        </div> <!-- End right-side-controls -->
-
-        <!-- Wall of Fame Modal -->
         <div class="modal-overlay" id="wall-modal">
             <div class="modal-content wall-modal-content">
                 <span class="modal-close wall-modal-close" id="close-wall-modal">&times;</span>
-                <p data-i18n="pw-wall-intro" class="wall-modal-intro">
-                </p>
+                <p data-i18n="pw-wall-intro" class="wall-modal-intro"></p>
                 <iframe data-src="pages/wordcloud.html" class="wall-modal-iframe" id="wall-modal-iframe"></iframe>
             </div>
         </div>
 
         <canvas id="pixel-canvas"></canvas>
 
-        <!-- Wall Stats Footer HUD (Start Date, Version, Last Contribution) -->
         <div id="wall-stats-hud" class="wall-stats-hud">
             <div id="stat-start" class="stat-cell stat-left"></div>
             <div id="stat-version" class="stat-cell stat-center"></div>
             <div id="stat-last" class="stat-cell stat-right"></div>
         </div>
 
-        <!-- Canvas Title -->
-        <!-- Canvas Title -->
         <div class="canvas-title" data-i18n="canvas-title"></div>
 
         <div class="pixel-tools" id="pixel-tools-bar">
@@ -364,15 +360,12 @@ require_once 'includes/security_headers.php';
                 </div>
             </div>
             <div class="tool-divider"></div>
-
             <div class="tool-group tool-draw-group">
                 <button class="buy-btn tool-btn-pan" id="tool-pan" data-i18n="tool-pan"></button>
                 <button class="buy-btn tool-btn-draw" id="tool-draw" data-i18n="tool-draw"></button>
                 <button class="buy-btn tool-btn-erase" id="tool-erase" data-i18n="tool-erase" title="Gomma">🧽</button>
             </div>
-
             <div class="tool-divider"></div>
-
             <div class="tool-group">
                 <button class="buy-btn tool-btn-undo" id="tool-undo" title="Annulla ultimo pixel"
                     data-i18n="tool-undo"></button>
@@ -387,7 +380,7 @@ require_once 'includes/security_headers.php';
         </div>
     </main>
 
-    <!-- Mission Modal -->
+    <!-- Modals -->
     <div class="modal-overlay" id="mission-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-mission-modal">&times;</span>
@@ -400,20 +393,16 @@ require_once 'includes/security_headers.php';
                     <p data-i18n="pw-modal-vision-p3"></p>
                     <p data-i18n="pw-modal-vision-tourism" class="mission-tourism-text"></p>
                 </div>
-
                 <div class="mission-modal-btns">
                     <a href="https://maps.app.goo.gl/x3qHV5TA2FzTdCSr6" target="_blank"
                         class="btn btn-outline mission-map-link" data-i18n="pw-vision-map-link"></a>
-
                     <a href="https://www.iglesiasturismo.it/" target="_blank"
                         class="btn btn-outline mission-tourism-link" data-i18n="pw-vision-tourism-link"></a>
                 </div>
             </div>
         </div>
     </div>
-    </div>
 
-    <!-- Image Size Input Modal -->
     <div class="modal-overlay" id="size-modal">
         <div class="modal-content size-modal-content">
             <div class="modal-title" data-i18n="prompt-height">Altezza desiderata in cm</div>
@@ -429,7 +418,6 @@ require_once 'includes/security_headers.php';
         </div>
     </div>
 
-    <!-- Clear Confirmation Modal -->
     <div class="modal-overlay" id="clear-modal">
         <div class="modal-content clear-modal-content">
             <div class="modal-title" data-i18n="tool-clear">🗑️ Pulisci</div>
@@ -446,7 +434,6 @@ require_once 'includes/security_headers.php';
         </div>
     </div>
 
-    <!-- Pricing Modal -->
     <div class="modal-overlay" id="pricing-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-pricing-modal">&times;</span>
@@ -457,13 +444,11 @@ require_once 'includes/security_headers.php';
                 <p data-i18n="pw-modal-pricing-p2"></p>
                 <p data-i18n="pw-modal-pricing-p3"></p>
                 <p data-i18n="pw-modal-pricing-end"></p>
-                <p data-i18n="pw-modal-support" class="support-link-wrapper">
-                </p>
+                <p data-i18n="pw-modal-support" class="support-link-wrapper"></p>
             </div>
         </div>
     </div>
 
-    <!-- Welcome Modal (Auto-open) -->
     <div class="modal-overlay" id="welcome-modal">
         <div class="welcome-card modal-content">
             <span class="modal-close" id="close-welcome-modal">&times;</span>
@@ -473,7 +458,6 @@ require_once 'includes/security_headers.php';
             </div>
             <div class="modal-body">
                 <p data-i18n="pw-welcome-intro"></p>
-
                 <div class="gold-box gold-box-style">
                     <div class="gold-box-header">
                         <span style="font-size:1.2rem;">🪙</span>
@@ -482,80 +466,55 @@ require_once 'includes/security_headers.php';
                     </div>
                     <p data-i18n="pw-gold-text" class="gold-text-style"></p>
                 </div>
-
-
-
                 <div id="welcome-details-container">
                     <p data-i18n="pw-welcome-usage"></p>
                     <p data-i18n="pw-welcome-wall"></p>
                     <p data-i18n="pw-welcome-email-note" style="margin-top: 8px;"></p>
                 </div>
-
                 <p data-i18n="pw-welcome-upload-info" style="margin-top: 15px;"></p>
-
                 <p data-i18n="pw-welcome-conversion" class="welcome-conversion-text"></p>
             </div>
             <button class="buy-btn welcome-close-btn" id="ack-welcome" data-i18n="pw-close"></button>
         </div>
     </div>
 
-    <!-- Diary Modal -->
     <div class="modal-overlay" id="diary-modal">
         <div class="modal-content diary-modal-content">
             <span class="modal-close" id="close-diary-modal">&times;</span>
-            <div class="modal-title diary-title-header">Madness Log
-            </div>
-            <div class="modal-body diary-body-content" id="diary-content">
-                <!-- Content injected via JS -->
-            </div>
+            <div class="modal-title diary-title-header">Madness Log</div>
+            <div class="modal-body diary-body-content" id="diary-content"></div>
         </div>
     </div>
 
-    <!-- Checkout Modal -->
     <div class="modal-overlay" id="checkout-modal">
         <div class="modal-content checkout-modal-content">
             <span class="modal-close" id="close-checkout-modal">&times;</span>
             <div class="modal-title checkout-modal-title" data-i18n="pw-confirm"></div>
-
             <div class="modal-body">
                 <div class="checkout-summary-container">
                     <div id="checkout-summary" class="checkout-breakdown"></div>
                     <p id="checkout-total" class="checkout-total-price">€ 0.00</p>
                     <p data-i18n="pw-sign-label" class="sign-label-margin"></p>
                 </div>
-
                 <div class="email-input-group">
-
                     <div class="email-input-wrapper">
                         <input type="email" id="signer-email" placeholder="La tua email (per ricevuta)"
                             data-i18n="[placeholder]pw-email-placeholder" class="email-input">
-                        <p class="privacy-text">
-                            La tua email sarà usata solo per inviarti la ricevuta e per verificare la proprietà dei
-                            pixel.
-                            <a href="pages/privacy.php" target="_blank" data-i18n="footer-privacy">Privacy & Cookie
-                                Policy</a>
-                        </p>
+                        <p class="privacy-text">La tua email sarà usata solo per inviarti la ricevuta e per verificare
+                            la proprietà dei pixel. <a href="pages/privacy.php" target="_blank"
+                                data-i18n="footer-privacy">Privacy & Cookie Policy</a></p>
                     </div>
-
                     <div class="email-input-wrapper" style="margin-top: 15px;">
                         <input type="email" id="referral-email" placeholder="Email di chi ti ha suggerito (Referral)"
                             data-i18n="[placeholder]pw-referral-placeholder" class="email-input">
-                        <p class="privacy-text" data-i18n="pw-referral-instr">
-                            Facoltativo: inserisci l'email di chi ti ha suggerito di donare.
-                        </p>
+                        <p class="privacy-text" data-i18n="pw-referral-instr">Facoltativo: inserisci l'email di chi ti
+                            ha suggerito di donare.</p>
                     </div>
-
-                    <!-- Stripe Elements Placeholder -->
                     <div class="stripe-logo-wrapper">
                         <img src="assets/images/Stripe_logo.svg" alt="Powered by Stripe" class="stripe-logo">
                     </div>
-                    <div id="payment-element">
-                        <!-- Stripe.js injects here -->
-                    </div>
-
-                    <div id="payment-message" class="hidden payment-error-msg">
-                    </div>
-
+                    <div id="payment-element"></div>
+                    <div id="payment-message" class="hidden payment-error-msg"></div>
                     <button class="buy-btn pay-btn-wrapper" id="submit-payment">
                         <span id="button-text">Paga Ora</span>
                         <div class="spinner hidden" id="spinner"></div>
@@ -565,24 +524,29 @@ require_once 'includes/security_headers.php';
         </div>
     </div>
 
-    <!-- Lightbox Overlay for News Images -->
     <div id="lightbox-overlay" class="lightbox-overlay">
         <span class="lightbox-close">&times;</span>
         <img id="lightbox-img" src="" alt="Full view">
     </div>
 
-    <script src="assets/js/translations.js?v=2.3.0" nonce="<?php echo $nonce; ?>"></script>
-    <script src="assets/js/error_modal.js?v=2.3.0" nonce="<?php echo $nonce; ?>"></script>
-    <script src="assets/js/pixel-wall.js?v=2.3.0" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/translations.js?v=2.3.2" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/error_modal.js?v=2.3.2" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/pixel-wall.js?v=2.3.2" nonce="<?php echo $nonce; ?>"></script>
 
     <?php
-    // Prioritize local GDPR for standalone mode (independence)
     if (file_exists('gdpr/banner.php')) {
         include_once 'gdpr/banner.php';
     } elseif (file_exists('../gdpr/banner.php')) {
         include_once '../gdpr/banner.php';
     }
     ?>
+    <div class="footer-legal">
+        <?php
+        require 'gdpr/config.php';
+        echo htmlspecialchars($gdpr_company_name) . " - P.IVA " . htmlspecialchars($gdpr_company_vat) . "<br>";
+        echo htmlspecialchars($gdpr_company_address) . " | <a href='pages/privacy.php' target='_blank'>Privacy & Cookie Policy</a>";
+        ?>
+    </div>
 </body>
 
 </html>

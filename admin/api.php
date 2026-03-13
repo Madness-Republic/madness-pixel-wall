@@ -88,6 +88,7 @@ if ($action === 'save_settings') {
 
     $success = atomicUpdate($settings_file, function ($current) use ($input) {
         // Merge with current to preserve fields not modified by UI
+        // Note: Tracking IDs (tracking.ga4_id, tracking.google_ads_id) are handled automatically here
         return array_merge_recursive_distinct($current, $input);
     });
 

@@ -1,22 +1,23 @@
-Order Deny,Allow
-Deny from all
+# Prevent directory listing
+Options -Indexes
 
-<Files "wall_preset.json">
-    Allow from all
-</Files>
-
-<Files "updates.json">
-    Allow from all
-</Files>
-
-# Allow public access to images
+# Apache 2.4+
 <IfModule mod_authz_core.c>
-    <Directory "uploads">
+    # By default, we might want to keep things restricted
+    # But we specifically allow the JSON files needed by the frontend
+    <FilesMatch "^(wall_preset\.json|updates\.json)$">
         Require all granted
-    </Directory>
+    </FilesMatch>
+    
+    # We don't use 'Require all denied' here to allow subdirectories 
+    # (like uploads/) to have their own .htaccess rules.
 </IfModule>
+
+# Apache 2.2 / Legacy
 <IfModule !mod_authz_core.c>
-    <FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Order Deny,Allow
+    Deny from all
+    <FilesMatch "^(wall_preset\.json|updates\.json)$">
         Allow from all
     </FilesMatch>
 </IfModule>

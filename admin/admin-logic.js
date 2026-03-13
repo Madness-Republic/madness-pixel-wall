@@ -150,8 +150,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <button type="submit" class="btn btn-primary">${t('save_settings')}</button>
                 </form>
+                <!-- 2. AD GRANTS / TRACKING CONFIG -->
+                <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                    <h3 style="color: var(--text-color); margin-bottom: 15px;">
+                        <i class="fas fa-chart-line" style="color: var(--accent);"></i> Google Ad Grants & Analytics
+                    </h3>
+                    <form id="tracking-form" class="admin-form">
+                        <div class="form-group">
+                            <label>Google Analytics 4 ID (G-XXXXXX)</label>
+                            <input type="text" id="ga4-id" value="${(settings.tracking && settings.tracking.ga4_id) || ''}" placeholder="G-..." style="font-family: monospace;">
+                        </div>
+                        <div class="form-group">
+                            <label>Google Ads Conversion ID (AW-XXXXXX/Label)</label>
+                            <input type="text" id="google-ads-id" value="${(settings.tracking && settings.tracking.google_ads_id) || ''}" placeholder="AW-..." style="font-family: monospace;">
+                            <small style="color: #666;">Incolla l'ID completo o ID/Label per la conversione.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">SALVA TRACKING</button>
+                    </form>
+                </div>
 
-                <!-- 2. STRIPE SETTINGS -->
+                <!-- 3. STRIPE SETTINGS -->
                 <form id="stripe-form" class="admin-form" style="margin-top: 30px; border-top: 4px solid var(--accent);">
                     <div class="branding-group-title"><i class="fas fa-credit-card"></i> ${t('stripe_config_title')}</div>
                     
@@ -230,11 +248,78 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
+            // Handle Tracking Settings (Added manually)
+            const trackingForm = document.getElementById('tracking-form');
+            if (trackingForm) {
+                trackingForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    const ga4 = document.getElementById('ga4-id').value.trim();
+                    const ads = document.getElementById('google-ads-id').value.trim();
+
+                    const update = {
+                        tracking: {
+                            ga4_id: ga4,
+                            google_ads_id: ads
+                        }
+                    };
+
+                    try {
+                        const saveRes = await fetch('api.php?action=save_settings', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+                            body: JSON.stringify(update)
+                        });
+                        const saveData = await saveRes.json();
+                        if (saveData.success) alert('Tracking ID salvati con successo!');
+                        else alert('Errore: ' + saveData.error);
+                    } catch (err) {
+                        alert('Errore di connessione');
+                        console.error(err);
+                    }
+                };
+            }
+
         } catch (err) {
             container.innerHTML = `<div class="error">${t('error_loading')}</div>`;
             console.error(err);
         }
     };
+
+    // --- TRACKING SAVING ---
+    // We attach this globally or inside loadSettings logic because the form is static in index.php but values are dynamic
+    // Actually, I added the form to index.php statically. Let's handle the submit event here.
+    // MOVED TO loadSettings FUNCTION
+    // const trackingForm = document.getElementById('tracking-form');
+    // if (trackingForm) {
+    //     trackingForm.onsubmit = async (e) => {
+    //         e.preventDefault();
+    //         const ga4 = document.getElementById('ga4-id').value.trim();
+    //         const ads = document.getElementById('google-ads-id').value.trim();
+
+    //         const update = {
+    //             tracking: {
+    //                 ga4_id: ga4,
+    //                 google_ads_id: ads
+    //             }
+    //         };
+
+    //         // Check CSRF
+    //         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    //         try {
+    //             const saveRes = await fetch('api.php?action=save_settings', {
+    //                 method: 'POST',
+    //                 headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+    //                 body: JSON.stringify(update)
+    //             });
+    //             const saveData = await saveRes.json();
+    //             if (saveData.success) alert('Tracking ID salvati con successo!');
+    //             else alert('Errore: ' + saveData.error);
+    //         } catch (err) {
+    //             alert('Errore di connessione');
+    //         }
+    //     };
+    // }
 
     // --- WINNERS LOADING ---
     window.loadWinners = async function () {

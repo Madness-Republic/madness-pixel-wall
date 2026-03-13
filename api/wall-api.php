@@ -37,9 +37,9 @@ function atomicJsonUpdate($filePath, $callback)
     // Use a separate lock file to ensure that the read-modify-write cycle is exclusive,
     // even across file renames (which would change the inode of the main file).
     $lockFile = $filePath . '.lock';
-    
+
     // Open lock file with w+ (creates if not exists)
-    $fpLock = fopen($lockFile, 'w+'); 
+    $fpLock = fopen($lockFile, 'w+');
     if (!$fpLock) {
         http_response_code(500);
         echo json_encode(['error' => 'Could not open lock file']);
@@ -65,27 +65,27 @@ function atomicJsonUpdate($filePath, $callback)
         if ($newData !== null) {
             // 3. Atomic Write (Write tmp -> Rename)
             $tempPath = $filePath . '.tmp';
-            
+
             // Encode data
             $jsonOutput = json_encode($newData);
             if ($jsonOutput === false) {
-                 // Encoding failed
-                 error_log("JSON Encoding failed in atomicJsonUpdate for $filePath");
+                // Encoding failed
+                error_log("JSON Encoding failed in atomicJsonUpdate for $filePath");
             } else {
-                 $writeResult = file_put_contents($tempPath, $jsonOutput);
-                 
-                 if ($writeResult !== false) {
+                $writeResult = file_put_contents($tempPath, $jsonOutput);
+
+                if ($writeResult !== false) {
                     // Ensure permissions
                     @chmod($tempPath, 0666);
-                    
+
                     // Atomic Rename
                     rename($tempPath, $filePath);
-                    
+
                     // Ensure permissions on final file
                     @chmod($filePath, 0666);
-                 } else {
-                     error_log("Failed to write temp file: $tempPath");
-                 }
+                } else {
+                    error_log("Failed to write temp file: $tempPath");
+                }
             }
         }
 
@@ -366,7 +366,7 @@ if ($type === 'reactions') {
                     break;
                 }
             }
-            return $found ? $data : null;
+            return $found ? array_values($data) : null;
         });
 
         header('Content-Type: application/json');

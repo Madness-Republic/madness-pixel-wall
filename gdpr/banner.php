@@ -13,7 +13,11 @@ if (!isset($gdpr_col_text))
 if (!isset($gdpr_bg_opacity))
     $gdpr_bg_opacity = 95;
 if (!isset($gdpr_version))
-    $gdpr_version = trim(@file_get_contents(__DIR__ . '/VERSION') ?: '1.2.0');
+    $gdpr_version = trim(@file_get_contents(__DIR__ . '/VERSION') ?: '1.3.3');
+
+// Branding
+$gdpr_brand_name = 'Madness GDPR Consent System v' . $gdpr_version;
+if (!isset($gdpr_enable_branding)) $gdpr_enable_branding = true;
 
 // Text Defaults
 if (!isset($gdpr_text_title_it))
@@ -90,6 +94,7 @@ foreach ($enabled_langs as $lang) {
     window.gdprTranslations = <?php echo json_encode($translations_bundle); ?>;
     window.MadnessGDPR = {
         ga4_id: '<?php echo $gdpr_ga4_id; ?>',
+        google_ads_id: '<?php echo $gdpr_google_ads_id ?? ""; ?>',
         cookie_duration: <?php echo $gdpr_cookie_duration; ?>,
         default_lang: '<?php echo $gdpr_default_lang; ?>',
         privacy_url: '<?php echo $gdpr_final_privacy_url; ?>',
@@ -182,6 +187,7 @@ foreach ($enabled_langs as $lang) {
                     <?php if ($gdpr_enable_branding): ?>
                         <div class="gdpr-system-info"><?php echo $gdpr_brand_name; ?></div>
                     <?php endif; ?>
+
                     <button id="btn-save-prefs" class="gdpr-btn gdpr-btn-accept">Save Preferences</button>
                 </div>
             </div>

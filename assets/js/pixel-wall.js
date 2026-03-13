@@ -35,8 +35,29 @@ class PixelWall {
         this.floatingImage = null;
         this.floatingPos = { x: 0, y: 0 };
         this.winners = { gold: [], silver: [] }; // Special pixels found by users
+        this.hasLoggedDrawing = false; // Tracking flag for session stats
 
         this.init();
+    }
+
+    logEvent(eventName) {
+        // Send a background signal to the tracker with the event name
+        // Using a more robust path relative to current location
+        const trackerPath = '../analytics/tracker.php';
+
+        fetch(trackerPath, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                page: 'Pixel Wall',
+                event: eventName,
+                is_ad: window.location.search.includes('gclid'),
+                lang: document.documentElement.lang || 'it'
+            })
+        })
+            .then(res => res.json())
+            .then(data => console.log(`PixelWall Tracking: ${eventName}`, data))
+            .catch(e => console.warn('PixelWall Tracking failed:', e));
     }
 
     async init() {
@@ -112,6 +133,11 @@ class PixelWall {
                 if (window.setLanguage) {
                     const currentLang = document.documentElement.lang || 'it';
                     window.setLanguage(currentLang);
+                }
+
+                // FIX: Ensure global ADS_ID is available for tracking
+                if (this.settings.tracking && this.settings.tracking.google_ads_id) {
+                    window.ADS_ID = this.settings.tracking.google_ads_id;
                 }
             }
         } catch (e) {
@@ -545,6 +571,7 @@ class PixelWall {
         const clearModal = document.getElementById('clear-modal');
         if (clearModal) {
             document.getElementById('clear-confirm-btn').onclick = () => {
+                this.logEvent('Canvas Cleared');
                 this.pixelMap.clear();
                 this.history = [];
                 this.saveSession();
@@ -572,6 +599,7 @@ class PixelWall {
         if (uploadBtn && fileInput) {
             uploadBtn.onclick = (e) => {
                 e.stopPropagation();
+                this.logEvent('Upload Started');
                 fileInput.click();
             };
 
@@ -612,6 +640,7 @@ class PixelWall {
 
         document.getElementById('checkout-btn').onclick = (e) => {
             e.stopPropagation();
+            this.logEvent('Checkout Opened');
             this.handleCheckout();
         };
 
@@ -745,6 +774,7 @@ class PixelWall {
     }
 
     finalizeImageProcessing(img, heightCm) {
+        this.logEvent('Image Processed');
         const lang = document.documentElement.lang || 'it';
         const t = (k) => (window.translations && window.translations[lang] && window.translations[lang][k]) ? window.translations[lang][k] : k;
 
@@ -825,6 +855,7 @@ class PixelWall {
     }
 
     async handleCheckout() {
+        this.logEvent('Checkout Opened');
         const lang = document.documentElement.lang || 'it';
         const t = (k) => (window.translations && window.translations[lang] && window.translations[lang][k]) ? window.translations[lang][k] : k;
 
@@ -1001,6 +1032,9 @@ class PixelWall {
                     const saveRes = await this.savePixelsToBackend(email, paymentIntent.id, referral);
 
                     if (saveRes && saveRes.success) {
+                        // --- TRACKING: Conversion Event ---
+                        this.trackConversion(amount, paymentIntent.id);
+
                         // 2. Refresh stats immediately so date/money appears in HUD
                         this.updateGlobalStats();
 
@@ -1036,6 +1070,48 @@ class PixelWall {
             modal.classList.remove('active');
             modal.style.display = 'none';
         };
+    }
+
+    trackConversion(amount, txnId) {
+        console.log('PixelWall: Attempting to track conversion...', { amount, txnId, adsId: window.ADS_ID });
+
+        if (typeof window.gtag === 'function') {
+            // 1. GA4 generic purchase event
+            window.gtag('event', 'purchase', {
+                transaction_id: txnId,
+                value: amount,
+                currency: 'EUR',
+                items: [{
+                    item_id: 'pixel_wall_donation',
+                    item_name: 'Donazione Pixel Wall',
+                    price: amount,
+                    quantity: 1
+                }]
+            });
+
+            // 2. Google Ads specific conversion event
+            // Using 'purchase' name is also recommended by modern Google Ads docs for GA4-linked accounts
+            if (window.ADS_ID) {
+                window.gtag('event', 'purchase', {
+                    'send_to': window.ADS_ID + '/lSfKCOXXnvAbELuFvL5C',
+                    'value': amount,
+                    'currency': 'EUR',
+                    'transaction_id': txnId
+                });
+
+                // Fallback / Legacy compatibility
+                window.gtag('event', 'conversion', {
+                    'send_to': window.ADS_ID + '/lSfKCOXXnvAbELuFvL5C',
+                    'value': amount,
+                    'currency': 'EUR',
+                    'transaction_id': txnId
+                });
+            }
+
+            console.log('PixelWall: Conversion Events Fired.');
+        } else {
+            console.warn('PixelWall: gtag not found, conversion not tracked.');
+        }
     }
 
     async savePixelsToBackend(email, txnId, referral = '') {
@@ -1121,7 +1197,7 @@ class PixelWall {
                         document.head.appendChild(script);
                     });
                 }
-                const res = await fetch('get_public_key.php');
+                const res = await fetch('api/get_public_key.php');
                 const data = await res.json();
                 this.stripe = Stripe(data.publicKey);
             } catch (e) {
@@ -1145,6 +1221,9 @@ class PixelWall {
                 // IMPORTANT: this.pixelMap was loaded in constructor/loadData from 'madness_pixels'
                 if (this.pixelMap.size > 0) {
                     const saveRes = await this.savePixelsToBackend(email, paymentIntent.id, referral);
+
+                    // --- TRACKING: Conversion Event ---
+                    this.trackConversion(amount, paymentIntent.id);
 
                     // Show Success / Signature UI
                     if (saveRes && saveRes.isWinner) {
@@ -1583,6 +1662,11 @@ class PixelWall {
         } else if (this.activeTool === 'upload') {
             // Should not happen if floatingImage is null, but safety
         } else {
+            if (!this.hasLoggedDrawing) {
+                const eventName = (this.activeTool === 'erase') ? 'Eraser Used' : 'Drawing Started';
+                this.logEvent(eventName);
+                this.hasLoggedDrawing = true;
+            }
             this.isDrawing = true;
             this.currentStroke = []; // Start new stroke
             this.pixelAt(e.clientX, e.clientY);
@@ -1707,6 +1791,7 @@ class PixelWall {
                 this.history.push(stroke);
             }
 
+            this.logEvent('Image Placed');
             this.saveSession();
             this.updateStats();
 
@@ -1896,7 +1981,9 @@ class PixelWall {
 
         // --- Draw Confirmed Pixels (OPTIMIZED: From Cache) ---
         // Instead of 10,000 fillRect calls, we do 1 drawImage
-        this.ctx.drawImage(this.cacheCanvas, 0, 0);
+        if (this.cacheCanvas) {
+            this.ctx.drawImage(this.cacheCanvas, 0, 0);
+        }
 
         // --- Draw Session Pixels (The Draft) ---
         this.pixelMap.forEach((color, key) => {
@@ -2400,6 +2487,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeMission) closeMission.onclick = () => hideModal(mModal);
     if (closeWall) closeWall.onclick = () => hideModal(wallModal);
 
+    // --- LIGHTBOX LOGIC (Top Level inside DOMContentLoaded) ---
+    const lbOverlay = document.getElementById('lightbox-overlay');
+    const lbImg = document.getElementById('lightbox-img');
+    const lbClose = document.querySelector('.lightbox-close');
+
+    window.openLightbox = (src) => {
+        const lb = lbOverlay || document.getElementById('lightbox-overlay');
+        const lbI = lbImg || document.getElementById('lightbox-img');
+        if (!lb || !lbI) {
+            console.error("Lightbox elements not found");
+            return;
+        }
+        lbI.src = src;
+        lb.style.display = 'flex';
+        lb.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.hideLightbox = () => {
+        const lb = lbOverlay || document.getElementById('lightbox-overlay');
+        if (!lb) return;
+        lb.classList.remove('active');
+        lb.style.display = 'none';
+        document.body.style.overflow = '';
+    };
+
+    if (lbClose) lbClose.onclick = window.hideLightbox;
+    if (lbOverlay) {
+        lbOverlay.onclick = (e) => {
+            if (e.target !== lbImg) window.hideLightbox();
+        };
+    }
+
     window.onclick = (event) => {
         if (event.target == pModal) hideModal(pModal);
         if (event.target == mModal) hideModal(mModal);
@@ -2561,7 +2681,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Append timestamp to prevent caching
             const res = await fetch(`data/updates.json?t=${new Date().getTime()}`);
             if (!res.ok) throw new Error("Log not found");
-            const posts = await res.json();
+            let posts = await res.json();
+
+            // Safety check: ensure posts is always an array
+            // (PHP json_encode returns an object if array keys are non-sequential/preserved)
+            if (posts && !Array.isArray(posts)) {
+                posts = Object.values(posts);
+            }
 
             if (!posts || posts.length === 0) {
                 diaryContent.innerHTML = '<p class="diary-empty">No entries found.</p>';
@@ -2642,103 +2768,75 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             diaryContent.innerHTML = tempDiv.innerHTML;
-
-            // Handle reaction clicks
-            diaryContent.querySelectorAll('.reaction-btn').forEach(btn => {
-                btn.onclick = async (e) => {
-                    e.stopPropagation();
-                    const entry = btn.closest('.diary-entry');
-                    const postId = entry.getAttribute('data-id');
-                    const reaction = btn.getAttribute('data-reaction'); // 'likes' or 'hearts'
-                    const otherReaction = (reaction === 'likes') ? 'hearts' : 'likes';
-
-                    // Check if already reacted with THIS same reaction
-                    const localReactions = JSON.parse(localStorage.getItem('pixel_wall_reactions') || '{}');
-                    if (localReactions[postId] && localReactions[postId] === reaction) {
-                        return; // Already has this reaction, do nothing or could toggle off? 
-                        // User requested switching, so if same, we do nothing.
-                    }
-
-                    const previousReaction = localReactions[postId]; // Could be 'hearts' if clicking 'likes'
-
-                    try {
-                        const response = await fetch('api/wall-api.php?type=reactions', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                id: postId,
-                                add: reaction,
-                                remove: previousReaction // If it was the other one, remove it
-                            })
-                        });
-
-                        const result = await response.json();
-                        if (result.success) {
-                            // 1. Update Current Button UI
-                            const countEl = btn.querySelector('.reaction-count');
-                            countEl.textContent = parseInt(countEl.textContent) + 1;
-                            btn.classList.add('active');
-
-                            // 2. If there was a previous reaction, update the other button UI
-                            if (previousReaction) {
-                                const otherBtn = entry.querySelector(`.reaction-btn[data-reaction="${previousReaction}"]`);
-                                if (otherBtn) {
-                                    const otherCountEl = otherBtn.querySelector('.reaction-count');
-                                    otherCountEl.textContent = Math.max(0, parseInt(otherCountEl.textContent) - 1);
-                                    otherBtn.classList.remove('active');
-                                }
-                            }
-
-                            // 3. Save to local storage (only one reaction per post allowed now)
-                            localReactions[postId] = reaction;
-                            localStorage.setItem('pixel_wall_reactions', JSON.stringify(localReactions));
-                        }
-                    } catch (err) {
-                        console.error("Reaction error", err);
-                    }
-                };
-            });
-
-            // Handle lightbox clicks via delegation
-            diaryContent.querySelectorAll('.diary-image-link').forEach(link => {
-                link.onclick = (e) => {
-                    const img = link.querySelector('img');
-                    if (img && window.openLightbox) window.openLightbox(img.src);
-                };
-            });
-
         } catch (e) {
             console.error("Diary load error", e);
             diaryContent.innerHTML = '<p class="diary-error">SYSTEM ERROR: Connection Lost.</p>';
         }
     }
 
+    // --- DIARY EVENT DELEGATION (Attached once) ---
+    if (diaryContent) {
+        diaryContent.addEventListener('click', async (e) => {
+            // 1. Lightbox / Image Click
+            const imgLink = e.target.closest('.diary-image-link');
+            if (imgLink) {
+                e.preventDefault();
+                e.stopPropagation();
+                const img = imgLink.querySelector('img');
+                if (img && typeof window.openLightbox === 'function') {
+                    window.openLightbox(img.src);
+                }
+                return;
+            }
+
+            // 2. Reaction Click
+            const btn = e.target.closest('.reaction-btn');
+            if (btn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const reaction = btn.getAttribute('data-reaction');
+                const entry = btn.closest('.diary-entry');
+                const postId = entry.getAttribute('data-id');
+
+                const localReactions = JSON.parse(localStorage.getItem('pixel_wall_reactions') || '{}');
+                const previousReaction = localReactions[postId];
+
+                if (previousReaction === reaction) return;
+
+                try {
+                    const res = await fetch('api/wall-api.php?type=reactions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: postId,
+                            add: reaction,
+                            remove: previousReaction || null
+                        })
+                    });
+
+                    if (res.ok) {
+                        const countEl = btn.querySelector('.reaction-count');
+                        countEl.textContent = parseInt(countEl.textContent || '0') + 1;
+                        btn.classList.add('active');
+
+                        if (previousReaction) {
+                            const otherBtn = entry.querySelector(`.reaction-btn[data-reaction="${previousReaction}"]`);
+                            if (otherBtn) {
+                                const otherCountEl = otherBtn.querySelector('.reaction-count');
+                                otherCountEl.textContent = Math.max(0, parseInt(otherCountEl.textContent || '0') - 1);
+                                otherBtn.classList.remove('active');
+                            }
+                        }
+
+                        localReactions[postId] = reaction;
+                        localStorage.setItem('pixel_wall_reactions', JSON.stringify(localReactions));
+                    }
+                } catch (err) {
+                    console.error("Reaction error", err);
+                }
+            }
+        });
+    }
+
     setLanguage(savedLang);
-
-    // --- Lightbox Logic (Replicating main site) ---
-    const lightbox = document.getElementById('lightbox-overlay');
-    const lightboxImg = document.getElementById('lightbox-img');
-    const closeLightbox = document.querySelector('.lightbox-close');
-
-    window.openLightbox = (src) => {
-        if (!lightbox || !lightboxImg) return;
-        lightboxImg.src = src;
-        lightbox.style.display = 'flex';
-        lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scroll
-    };
-
-    const hideLightbox = () => {
-        if (!lightbox) return;
-        lightbox.classList.remove('active');
-        setTimeout(() => {
-            lightbox.style.display = 'none';
-            document.body.style.overflow = '';
-        }, 300);
-    };
-
-    if (closeLightbox) closeLightbox.onclick = hideLightbox;
-    if (lightbox) lightbox.onclick = (e) => {
-        if (e.target !== lightboxImg) hideLightbox();
-    };
 });

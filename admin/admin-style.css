@@ -116,8 +116,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 40px;
-    height: 100vh;
+    position: relative;
 }
 
 .tab-content {
@@ -125,6 +124,7 @@ body {
     flex: 1;
     flex-direction: column;
     min-height: 0;
+    padding: 40px; /* Default padding for standard sections */
 }
 
 .tab-content.active {
@@ -132,10 +132,12 @@ body {
     overflow-y: auto;
 }
 
-/* Tabs containing iframes should not have their own scrollbar */
+/* Tabs containing iframes should take full space without internal padding */
 #news.active,
+#visitors.active,
 #contributions.active,
 #winners.active {
+    padding: 0;
     overflow: hidden;
 }
 
@@ -311,10 +313,10 @@ body {
 /* Iframes */
 .admin-iframe {
     width: 100%;
-    flex: 1;
+    height: 100%;
     border: none;
     background: transparent;
-    border-radius: 8px;
+    display: block;
 }
 
 .loading {
