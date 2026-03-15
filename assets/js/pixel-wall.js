@@ -1033,7 +1033,7 @@ class PixelWall {
 
                     if (saveRes && saveRes.success) {
                         // --- TRACKING: Conversion Event ---
-                        this.trackConversion(amount, paymentIntent.id);
+                        this.trackConversion(amount, paymentIntent.id, email);
 
                         // 2. Refresh stats immediately so date/money appears in HUD
                         this.updateGlobalStats();
@@ -1072,8 +1072,8 @@ class PixelWall {
         };
     }
 
-    trackConversion(amount, txnId) {
-        console.log('PixelWall: Attempting to track conversion...', { amount, txnId, adsId: window.ADS_ID });
+    trackConversion(amount, txnId, email = null) {
+        console.log('PixelWall: Attempting to track conversion...', { amount, txnId, email: email ? '***' : null, adsId: window.ADS_ID });
 
         if (typeof window.gtag === 'function') {
             // 1. GA4 generic purchase event
@@ -1092,6 +1092,13 @@ class PixelWall {
             // 2. Google Ads specific conversion event
             // Using 'purchase' name is also recommended by modern Google Ads docs for GA4-linked accounts
             if (window.ADS_ID) {
+                // Enhanced Conversions: Set user data before the conversion event
+                if (email) {
+                    window.gtag('set', 'user_data', {
+                        "email": email
+                    });
+                }
+
                 window.gtag('event', 'purchase', {
                     'send_to': window.ADS_ID + '/lSfKCOXXnvAbELuFvL5C',
                     'value': amount,
@@ -1223,7 +1230,7 @@ class PixelWall {
                     const saveRes = await this.savePixelsToBackend(email, paymentIntent.id, referral);
 
                     // --- TRACKING: Conversion Event ---
-                    this.trackConversion(amount, paymentIntent.id);
+                    this.trackConversion(amount, paymentIntent.id, email);
 
                     // Show Success / Signature UI
                     if (saveRes && saveRes.isWinner) {
