@@ -891,14 +891,18 @@ class PixelWall {
         const pixels = this.pixelMap.size;
 
         // --- FEE PASSING CALCULATION ---
-        const netAmount = (area * 0.20) + (pixels * 0.30);
-        const fixedFee = 0.25;
-        const percentFee = 0.015;
+        const landRate = this.settings?.pricing?.land_rate_cents ? this.settings.pricing.land_rate_cents / 100 : 0.20;
+        const inkRate = this.settings?.pricing?.ink_rate_cents ? this.settings.pricing.ink_rate_cents / 100 : 0.30;
+        const netAmount = (area * landRate) + (pixels * inkRate);
+        const fixedFee = this.settings?.pricing?.stripe_fixed_cents !== undefined ? this.settings.pricing.stripe_fixed_cents / 100 : 0.25;
+        const percentFee = this.settings?.pricing?.stripe_percent !== undefined ? this.settings.pricing.stripe_percent : 0.015;
+        const minCharge = this.settings?.pricing?.min_charge_cents !== undefined ? this.settings.pricing.min_charge_cents / 100 : 0.50;
+        
         let amount = 0;
 
         if (netAmount > 0) {
             amount = (netAmount + fixedFee) / (1 - percentFee);
-            if (amount < 0.50) amount = 0.50; // Stripe Min
+            if (amount < minCharge) amount = minCharge;
         }
 
         const fees = amount - netAmount;
@@ -1932,10 +1936,10 @@ class PixelWall {
         const pixelParams = this.pixelMap.size;
 
         // --- HYBRID PRICING MODEL ---
-        // Land Tax: 0.20€ per cm² (Net Area)
-        // Ink Fee: 0.30€ per Pixel drawn
-        const landCost = netArea * 0.20;
-        const inkCost = pixelParams * 0.30;
+        const landRate = this.settings?.pricing?.land_rate_cents ? this.settings.pricing.land_rate_cents / 100 : 0.20;
+        const inkRate = this.settings?.pricing?.ink_rate_cents ? this.settings.pricing.ink_rate_cents / 100 : 0.30;
+        const landCost = netArea * landRate;
+        const inkCost = pixelParams * inkRate;
         const totalPrice = landCost + inkCost;
 
         document.querySelectorAll('.val-pixels-count').forEach(el => el.textContent = `${netArea.toLocaleString()} cm² (${pixelParams} px)`);

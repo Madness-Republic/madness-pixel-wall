@@ -6,8 +6,8 @@
         "preset_padding": 4
     },
     "pricing": {
-        "land_rate_cents": 20,
-        "ink_rate_cents": 30,
+        "land_rate_cents": 10,
+        "ink_rate_cents": 10,
         "stripe_fixed_cents": 25,
         "stripe_percent": 0.015,
         "min_charge_cents": 50

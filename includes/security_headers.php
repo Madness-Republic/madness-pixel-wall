@@ -24,7 +24,7 @@ $csp = [
     "default-src 'self'",
 
     // Scripts: Allow self, secure nonce, Stripe, CDNJS, YouTube, and Google GTM/Ads/Analytics
-    "script-src 'self' 'nonce-$nonce' 'unsafe-inline' https://js.stripe.com https://cdnjs.cloudflare.com https://www.youtube.com https://s.ytimg.com https://*.googletagmanager.com https://*.google-analytics.com https://tagmanager.google.com https://*.googlesyndication.com https://*.googleadservices.com",
+    "script-src 'self' 'nonce-$nonce' 'unsafe-inline' https://js.stripe.com https://cdnjs.cloudflare.com https://www.youtube.com https://s.ytimg.com https://*.googletagmanager.com https://*.google-analytics.com https://tagmanager.google.com https://*.googlesyndication.com https://*.googleadservices.com https://*.google.com https://*.google.it",
 
     // Styles: Allow self, inline styles, Google Fonts, and CDNJS
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://tagmanager.google.com https://fonts.gstatic.com",
@@ -36,10 +36,10 @@ $csp = [
     "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
 
     // Connections (AJAX): Allow self, Stripe, YouTube, and Google Analytics/Ads/GTM
-    "connect-src 'self' https://api.stripe.com https://*.youtube.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.g.doubleclick.net https://*.google.com https://*.googlesyndication.com https://*.googleadservices.com",
+    "connect-src 'self' https://api.stripe.com https://*.youtube.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.g.doubleclick.net https://*.google.com https://*.google.it https://*.googlesyndication.com https://*.googleadservices.com",
 
     // Frames (iframes): Allow self, Stripe, YouTube, and Tag Assistant Preview
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vars.hotjar.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://*.youtube.com https://*.youtube-nocookie.com https://*.googletagmanager.com https://tagmanager.google.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vars.hotjar.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://*.youtube.com https://*.youtube-nocookie.com https://*.googletagmanager.com https://tagmanager.google.com https://*.google.com",
 
     // Frame Ancestors: Allow GTM to frame the site for Preview Mode
     "frame-ancestors 'self' https://*.googletagmanager.com https://tagmanager.google.com"
