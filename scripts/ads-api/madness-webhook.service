@@ -1,0 +1,24 @@
+[Unit]
+Description=Madness Republic - Google Ads Webhook Receiver
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/ads-api
+ExecStart=/root/ads-api/venv/bin/python3 /root/ads-api/webhook_receiver.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=madness-webhook
+
+# Variabili d'ambiente di sicurezza
+# Creare il file /etc/madness-ads.env con:
+#   WEBHOOK_TOKEN=madness_republic_conversion_secret_2026_t3
+#   TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+#   TELEGRAM_CHAT_ID=-1001234567890
+EnvironmentFile=/etc/madness-ads.env
+
+[Install]
+WantedBy=multi-user.target

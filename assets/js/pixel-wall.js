@@ -37,7 +37,22 @@ class PixelWall {
         this.winners = { gold: [], silver: [] }; // Special pixels found by users
         this.hasLoggedDrawing = false; // Tracking flag for session stats
 
+        this.captureGclid();
         this.init();
+    }
+
+    captureGclid() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const gclid = urlParams.get('gclid');
+            if (gclid) {
+                localStorage.setItem('madness_gclid', gclid);
+                document.cookie = `madness_gclid=${encodeURIComponent(gclid)}; path=/; max-age=2592000; SameSite=Lax`;
+                console.log("PixelWall: Captured and stored gclid", gclid);
+            }
+        } catch (e) {
+            console.warn("PixelWall: Failed to capture gclid", e);
+        }
     }
 
     logEvent(eventName) {
@@ -966,7 +981,10 @@ class PixelWall {
             const response = await fetch('api/create-payment-intent.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pixels: pixelsArray }),
+                body: JSON.stringify({ 
+                    pixels: pixelsArray,
+                    gclid: localStorage.getItem('madness_gclid') || ''
+                }),
             });
 
             const { clientSecret, error } = await response.json();

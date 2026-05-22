@@ -19,6 +19,8 @@
     "maintenance_mode": false,
     "tracking": {
         "ga4_id": "G-5HL3QJT8MT",
-        "google_ads_id": "AW-17847747259"
+        "google_ads_id": "AW-17847747259",
+        "hetzner_webhook_url": "https://community.madnessrepublic.com/webhook/conversion",
+        "hetzner_webhook_token": "madness_republic_conversion_secret_2026_t3"
     }
 }

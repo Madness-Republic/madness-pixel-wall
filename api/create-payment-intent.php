@@ -91,6 +91,12 @@ try {
         $totalAmountCents = $minChargeCents;
     }
 
+    // Leggi gclid dal body JSON o dal Cookie di prima parte
+    $gclid = isset($jsonObj->gclid) ? trim($jsonObj->gclid) : '';
+    if (empty($gclid) && isset($_COOKIE['madness_gclid'])) {
+        $gclid = trim($_COOKIE['madness_gclid']);
+    }
+
     // Crea il PaymentIntent
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => $totalAmountCents,
@@ -102,6 +108,7 @@ try {
         'metadata' => [
             'pixel_count' => $pixelCount,
             'area_cm2' => $areaCm2,
+            'gclid' => $gclid,
             // Potresti salvare qui i pixel compressi o un riferimento a un ID temporaneo nel DB
         ],
     ]);

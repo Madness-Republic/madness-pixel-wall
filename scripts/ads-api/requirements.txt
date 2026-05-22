@@ -1,0 +1,14 @@
+## Dipendenze Python per VPS Hetzner
+## Installa con: pip install -r requirements.txt
+
+# Google Ads API
+google-ads>=21.3.0
+
+# HTTP client per Telegram/Slack notifications
+requests>=2.31.0
+
+# Flask micro-framework per il webhook receiver
+flask>=3.0.0
+
+# YAML config loader
+PyYAML>=6.0

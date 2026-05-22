@@ -518,6 +518,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     // --- SECURITY CHECK END ---
 
+    // Extract gclid from Stripe PaymentIntent metadata (captured on payment creation)
+    $gclid = $intent->metadata['gclid'] ?? '';
+
     // 1. RECORD TRANSACTION FIRST (Prevents Replay Attacks)
     $txnFile = __DIR__ . '/../data/transactions.json';
     $txnRecord = [
@@ -525,6 +528,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'amount' => $amount / 100, // Stripe amount is in cents
         'email' => $metaData['email'] ?? 'unknown',
         'referral' => $metaData['referral'] ?? '',
+        'gclid' => $gclid,
+        'conversion_uploaded' => false,
         'date' => date('c')
     ];
 
@@ -546,6 +551,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['error' => 'Transaction ID already used or invalid. Replay attack detected.']);
         exit;
     }
+
+    // --- FIRE ASYNC WEBHOOK TO HETZNER VPS ---
+    // Non-blocking: use cURL with a very short timeout so Aruba doesn't wait
+    $settingsFile = __DIR__ . '/../data/settings.json';
+    $settings = [];
+    if (file_exists($settingsFile)) {
+        $settingsContent = file_get_contents($settingsFile);
+        if ($settingsContent) {
+            $settings = json_decode($settingsContent, true) ?? [];
+        }
+    }
+    $trackingSettings = $settings['tracking'] ?? [];
+    $webhookUrl = $trackingSettings['hetzner_webhook_url'] ?? '';
+    $webhookToken = $trackingSettings['hetzner_webhook_token'] ?? '';
+
+    if (!empty($webhookUrl) && !empty($gclid)) {
+        $payload = json_encode([
+            'txnId'     => $txnId,
+            'amount'    => $amount / 100,
+            'email'     => $metaData['email'] ?? 'unknown',
+            'gclid'     => $gclid,
+            'timestamp' => date('c'),
+            'token'     => $webhookToken
+        ]);
+
+        $ch = curl_init($webhookUrl);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'Content-Length: ' . strlen($payload)]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 2);        // Max 2 seconds — fire-and-forget
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1); // 1s to connect
+        curl_exec($ch);
+        curl_close($ch);
+    }
+    // --- END WEBHOOK ---
 
     // 2. Update Visual Wall (Colors) - Executed ONLY if transaction was new
     atomicJsonUpdate($dataFile, function ($currentData) use ($newPixels) {
