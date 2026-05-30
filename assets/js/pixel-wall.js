@@ -73,6 +73,22 @@ class PixelWall {
             .then(res => res.json())
             .then(data => console.log(`PixelWall Tracking: ${eventName}`, data))
             .catch(e => console.warn('PixelWall Tracking failed:', e));
+
+        // INOLTRO A GOOGLE ADS / GA4 (Micro-conversioni)
+        if (typeof gtag === 'function') {
+            const formattedEvent = eventName.replace(/\s+/g, '_').toLowerCase();
+            gtag('event', formattedEvent, {
+                'event_category': 'pixelwall_engagement',
+                'event_label': eventName
+            });
+
+            // Conversion tag esplicito per Ads
+            if (formattedEvent === 'checkout_opened') {
+                gtag('event', 'conversion', {'send_to': 'AW-17847747259/uumuCJmQmrYcELuFvL5C'});
+            }
+
+            console.log(`Pushed to gtag: ${formattedEvent}`);
+        }
     }
 
     async init() {

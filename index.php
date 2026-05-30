@@ -7,9 +7,9 @@ require_once 'includes/security_headers.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pixel Wall Crowdfunding | Madness Republic</title>
+    <title>Pixel Wall Crowdfunding | Madness Republic Iglesias</title>
     <meta name="description"
-        content="Contribuisci al crowdfunding disegnando sulla nostra Pixel Wall. Un pixel, un mattone per il nostro progetto.">
+        content="Fai una donazione per la Pixel Wall di Madness Republic a Iglesias. Contribuisci al crowdfunding disegnando il tuo pixel per supportare la riqualificazione del centro sportivo in Piazza Bruno Buozzi.">
 
     <?php
     // LOAD SETTINGS FOR TRACKING
@@ -243,6 +243,12 @@ require_once 'includes/security_headers.php';
 
 <body class="pixel-page">
     <div class="site-bg"></div>
+
+    <!-- SEO & Accessibility Text -->
+    <div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;">
+        <h1>Donazione Pixel Wall - Madness Republic Iglesias</h1>
+        <p>La Pixel Wall è l'iniziativa di raccolta fondi e donazione per la riqualificazione urbana del centro sportivo Madness Republic, situato in Piazza Bruno Buozzi a Iglesias. Attraverso questa campagna di crowdfunding, puoi lasciare il tuo segno disegnando un pixel e supportare la riqualificazione della piazza e far parte della community. Un pixel, un mattone per il nostro progetto.</p>
+    </div>
 
     <header class="pixel-header">
         <a href="../index.php" class="logo">
