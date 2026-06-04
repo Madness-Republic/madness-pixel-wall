@@ -19,6 +19,11 @@ class ConsentManager {
         // This satisfies strict "Prior Consent" scanners (Basic Consent Mode)
         if (this.consent) {
             this.initGoogleConsentMode();
+            // FIX: For returning visitors, gtag is already defined by index.php so
+            // initGoogleConsentMode() returns early without calling updateGCM().
+            // We must explicitly restore the consent state here to avoid ad_storage
+            // remaining 'denied' for users who had previously accepted cookies.
+            this.updateGCM(this.consent);
             this.activateScripts(this.consent);
         }
 

@@ -1,6 +1,6 @@
 # Active Context - Google Ads, Pixel Wall & Community App
 
-## 📍 Stato Attuale (30 Maggio 2026)
+## 📍 Stato Attuale (1 Giugno 2026)
 
 ### Sistema di Tracciamento
 ✅ **Aruba → Hetzner webhook TESTATO E FUNZIONANTE**
@@ -9,12 +9,12 @@
 - VPS riceve il payload e lo registra in conversion_log.jsonl
 - Servizio systemd `madness-webhook` attivo e in auto-restart
 
-### Campagne Google Ads — Post Intervento 30 Maggio ✅ COMPLETATO
+### Campagne Google Ads — Post Intervento
 - Tutte e 4 ENABLED con **MAXIMIZE_CONVERSIONS**
-- ✅ Micro-conversione `checkout_opened` creata su Google Ads (snippet AW-17847747259/uumuCJmQmrYcELuFvL5C)
-- ✅ Snippet evento integrato in `pixel-wall.js` → logEvent() → conversione sparata al click su "Vai al pagamento"
-- ✅ Vecchia conversione "Acquisto" morta (108gg) → declassata a Secondaria per sbloccare l'algoritmo
-- ⏳ Attesa 24-48h per prime impressioni
+- ✅ Micro-conversione `checkout_opened` creata su Google Ads
+- ✅ **VERIFICATA CON TAG ASSISTANT**: L'evento `checkout_opened` compare ed è rilevato con successo!
+- 🔴 Conversione "Acquisto Pixel Wall" temporaneamente sotto l'obiettivo "Altro" (Secondaria) - da impostare come Primaria.
+- 🔴 "checkout_opened" mostra "Configurazione errata" in Google Ads per latenza di aggiornamento e assenza di click da annunci reali.
 
 ### Community App SEO & Tracciamento — 30 Maggio ✅ COMPLETATO
 - ✅ Google Analytics GA4 (G-5HL3QJT8MT) + Ads (AW-17847747259) aggiunto a `community_v2.0/src/app/layout.tsx`
