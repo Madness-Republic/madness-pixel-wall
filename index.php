@@ -535,9 +535,9 @@ require_once 'includes/security_headers.php';
         <img id="lightbox-img" src="" alt="Full view">
     </div>
 
-    <script src="assets/js/translations.js?v=2.3.2" nonce="<?php echo $nonce; ?>"></script>
-    <script src="assets/js/error_modal.js?v=2.3.2" nonce="<?php echo $nonce; ?>"></script>
-    <script src="assets/js/pixel-wall.js?v=2.3.2" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/translations.js?v=2.3.3" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/error_modal.js?v=2.3.3" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/pixel-wall.js?v=2.3.3" nonce="<?php echo $nonce; ?>"></script>
 
     <?php
     if (file_exists('gdpr/banner.php')) {
