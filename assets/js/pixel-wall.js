@@ -671,7 +671,6 @@ class PixelWall {
 
         document.getElementById('checkout-btn').onclick = (e) => {
             e.stopPropagation();
-            this.logEvent('Checkout Opened');
             this.handleCheckout();
         };
 
