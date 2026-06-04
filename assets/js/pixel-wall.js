@@ -1143,14 +1143,6 @@ class PixelWall {
                     'currency': 'EUR',
                     'transaction_id': txnId
                 });
-
-                // Fallback / Legacy compatibility
-                window.gtag('event', 'conversion', {
-                    'send_to': window.ADS_ID + '/lSfKCOXXnvAbELuFvL5C',
-                    'value': amount,
-                    'currency': 'EUR',
-                    'transaction_id': txnId
-                });
             }
 
             console.log('PixelWall: Conversion Events Fired.');
