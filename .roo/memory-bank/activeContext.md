@@ -11,10 +11,10 @@
 
 ### Campagne Google Ads — Post Intervento
 - Tutte e 4 ENABLED con **MAXIMIZE_CONVERSIONS**
-- ✅ Micro-conversione `checkout_opened` creata su Google Ads
-- ✅ **VERIFICATA CON TAG ASSISTANT**: L'evento `checkout_opened` compare ed è rilevato con successo!
-- 🔴 Conversione "Acquisto Pixel Wall" temporaneamente sotto l'obiettivo "Altro" (Secondaria) - da impostare come Primaria.
-- 🔴 "checkout_opened" mostra "Configurazione errata" in Google Ads per latenza di aggiornamento e assenza di click da annunci reali.
+- ✅ Micro-conversione `checkout_opened` creata su Google Ads e verificata.
+- 🔴 "checkout_opened" mostra "Inattivo" e "Acquisto Pixel Wall" mostra "Richiede attenzione" nella UI.
+- ✅ Risolto bug GCM per visitatori ricorrenti in `consent_manager.js` (sia in pixel-wall che in `madness-gdpr-consent-system`).
+- ✅ Rimossa doppia chiamata di conversione `purchase` legacy in `pixel-wall.js`.
 
 ### Community App SEO & Tracciamento — 30 Maggio ✅ COMPLETATO
 - ✅ Google Analytics GA4 (G-5HL3QJT8MT) + Ads (AW-17847747259) aggiunto a `community_v2.0/src/app/layout.tsx`
@@ -31,6 +31,7 @@
 - VPS: `ssh root@91.99.205.205`
 
 ## 🔜 Prossimi Check
-1. **1-2 Giugno** — Verificare prime impressioni Google Ads: `./venv/bin/python3 diagnostics.py`
-2. **Deploy community app** — Eseguire `npm run build` e fare deploy su Hetzner per attivare sitemap e robots in produzione
-3. **Google Search Console** — Inviare `https://community.madnessrepublic.com/sitemap.xml` per accelerare l'indicizzazione
+1. **Deploy su Aruba** — Verificare deploy FTP di `gdpr/assets/js/consent_manager.js` e `assets/js/pixel-wall.js`.
+2. **Verifica Stato Conversioni** — L'AI verificherà via script (`diagnostics.py`) se lo stato delle azioni di conversione in Google Ads è cambiato.
+3. **Deploy community app** — Eseguire `npm run build` e fare deploy su Hetzner per attivare sitemap e robots in produzione.
+4. **Google Search Console** — Inviare `https://community.madnessrepublic.com/sitemap.xml` per accelerare l'indicizzazione.
