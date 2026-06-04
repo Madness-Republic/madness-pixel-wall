@@ -1,5 +1,5 @@
 # 📊 STATUS CAMPAGNE GOOGLE ADS — MADNESS REPUBLIC
-**Ultimo aggiornamento:** 27 Maggio 2026  
+**Ultimo aggiornamento:** 4 Giugno 2026  
 **Account ID:** `212-225-1825` (Ad Grants) | **MCC:** `345-226-6958`
 
 ---
@@ -24,7 +24,8 @@ webhook_receiver.py → Google Ads API → Upload conversione offline
 ### File modificati su Aruba
 | File | Modifica |
 |------|----------|
-| `assets/js/pixel-wall.js` | `captureGclid()` → localStorage + Cookie 30gg |
+| `assets/js/pixel-wall.js` | Cattura `gclid`, gestisce tracciamento GA4 ed evita doppie conversioni Ads (rimosso fallback legacy per `purchase`) |
+| `gdpr/assets/js/consent_manager.js` | Gestione Google Consent Mode (GCM v2) con fix per ripristinare il consenso corretto ai visitatori di ritorno |
 | `api/create-payment-intent.php` | Allega GCLID ai metadata Stripe |
 | `api/wall-api.php` | Estrae GCLID, salva in transactions.json, spara webhook |
 | `data/settings.json` | `hetzner_webhook_url` e `hetzner_webhook_token` |
@@ -39,7 +40,7 @@ webhook_receiver.py → Google Ads API → Upload conversione offline
 
 ---
 
-## 📈 Stato Campagne (27 Maggio 2026)
+## 📈 Stato Campagne & Conversioni (4 Giugno 2026)
 
 | Campagna | ID | Tipo | Stato | Strategia |
 |----------|-----|------|-------|-----------|
@@ -48,60 +49,39 @@ webhook_receiver.py → Google Ads API → Upload conversione offline
 | Pixelwall-PMax-Ita-Estero | 23518595507 | PMax | 🟢 ENABLED | MAXIMIZE_CONVERSIONS |
 | Pixelwall-PMax-US_GB | 23518645835 | PMax | 🟢 ENABLED | MAXIMIZE_CONVERSIONS |
 
-### Azioni di Conversione
-| Nome | ID/Snippet | Tipo | Uso |
-|------|-----|------|-----|
-| Inizio procedura di pagamento (checkout_opened) | AW-17847747259/uumuCJmQmrYcELuFvL5C | EVENTO JS | Primaria ✅ (Micro-conversione per sbloccare algoritmo) |
-| Acquisto Pixel Wall | 7483141093 | WEBPAGE | Primaria ✅ |
-| Acquisto (Tag Rotto) | 7497198169 | WEBPAGE | Secondaria ❌ (Rimossa dall'ottimizzazione) |
+### Stato Azioni di Conversione (rilevato da UI Google Ads)
+- ⚠️ **Acquisto Pixel Wall** (`7483141093`): "Richiede attenzione". Ottimizzazione: **Principale**.
+- 🔴 **checkout_opened** (`AW-17847747259/uumuCJmQmrYcELuFvL5C`): "Inattivo" (in precedenza "Configurazione errata"). Ottimizzazione: **Principale**.
 
 ---
 
-## 🔧 Interventi Eseguiti (27 Maggio 2026)
+## 🔧 Interventi Eseguiti (4 Giugno 2026)
 
-### Root cause diagnosi (0 impressioni dopo settimane):
-1. **Strategia TARGET_SPEND + cap $2 CPC** → perdita del 90% delle aste ("search_rank_lost_impression_share: 90%")
-2. **Quality Score N/D** su tutti i keyword → Ad Rank troppo basso
-3. **Impressioni reali trovate:** `raccolta fondi online` aveva 10% impression share ma perdeva il 90% per rank
+### 1. Fix Google Consent Mode (GCM) per visitatori ricorrenti
+* **Problema:** I visitatori di ritorno che avevano già accettato i cookie in passato rimanevano bloccati con `ad_storage: denied` perché `initGoogleConsentMode()` ritornava in anticipo a causa della presenza del tag `gtag` globale inserito dalla pagina ospite.
+* **Risoluzione:** Aggiunto un controllo esplicito per forzare `updateGCM()` se il consenso è già presente in memoria.
+* **Repo allineati:** Modifica applicata sia nel submodule locale `gdpr/assets/js/consent_manager.js` di `madness-pixel-wall` sia nel repository sorgente standalone `madness-gdpr-consent-system` (commit `d6cdc39`).
 
-### Fix applicati:
-1. ✅ **Search Campaign** → cambiata da `TARGET_SPEND ($2 cap)` a `MAXIMIZE_CONVERSIONS` (nessun cap CPC)
-2. ✅ **+10 keyword ad alto volume** aggiunte nel gruppo "Gruppo di annunci 1":
-   - `donazione online`, `raccolta fondi`, `crowdfunding` (broad)
-   - `aiutare bambini`, `sport per tutti` (broad)
-   - `fare beneficenza online`, `donare a una causa` (phrase)
-   - `sostieni una associazione`, `pixel art online`, `personalizzare un pixel` (broad/phrase)
-3. ⚠️ **PMax temporaneamente messe in pausa per errore** → riattivate subito dopo
+### 2. Risoluzione eventi duplicati "purchase" in Tag Assistant
+* **Problema:** Durante il processo di acquisto, Tag Assistant rilevava azioni doppie per la conversione `purchase`.
+* **Risoluzione:** Rimosso il blocco legacy redundante in `pixel-wall.js` che inviava un evento `'conversion'` parallelo e con lo stesso parametro `'send_to'` del moderno evento `'purchase'`. Ora viene inviato solo l'evento `'purchase'` corretto.
 
-### Nota importante verificata — PMax su Ad Grants:
-> **Le campagne Performance Max SONO consentite su Google Ad Grants** da Gennaio 2025.
-> Differenze rispetto alle PMax a pagamento:
-> - Eroga solo su **Search e Maps** (non YouTube/Display/Gmail)
-> - **Esenti dal requisito CTR 5%** (vantaggio!)
-> - Non supportano video asset
-> - Budget condiviso con il grant ($10.000/mese)
+### 3. Analisi eventi "checkout_opened"
+* **Verifica:** Tag Assistant rileva correttamente l'inizio del checkout con due chiamate distinte ma complementari: una a GA4 (`checkout_opened`) e una a Google Ads (`conversion` con tag `uumuCJmQmrYcELuFvL5C`). Questo comportamento è corretto per popolare sia le analytics che il tracciamento delle campagne senza duplicare i conteggi delle conversioni di Google Ads.
 
 ---
 
 ## 📝 TODO — Prossima Sessione
 
 ### Priorità ALTA
-- [ ] **Verificare se ci sono impressioni** dopo 24-48h dal cambio strategia (27 → 29 maggio)
-- [ ] **Controllare Quality Score** delle nuove keyword aggiunte
-- [ ] **Verificare `conversion_log.jsonl`** sul VPS per confermare che le conversioni reali vengano ricevute
+- [ ] **Verifica automatica dello stato delle conversioni:** L'AI eseguirà direttamente gli script di diagnostica (`diagnostics.py`) per verificare se le azioni di conversione in Google Ads hanno cambiato stato (es. da "Inattivo/Richiede attenzione" ad attivo) dopo la ricezione dei dati reali delle sessioni di test/produzione.
+- [ ] **Deploy file su Aruba (azione utente):** Verificare che i file `gdpr/assets/js/consent_manager.js` e `assets/js/pixel-wall.js` aggiornati siano caricati in produzione via FTP.
+- [ ] **Monitoraggio logs VPS:** Eseguire `tail -n 20 /root/ads-api/conversion_log.jsonl` per verificare la ricezione delle conversioni reali sul server.
 
 ### Priorità MEDIA
-- [ ] **Ottimizzare Asset Group PMax** — aggiungere immagini di qualità e descrizioni più specifiche
-- [ ] **Aggiungere Sitelink Extensions** alla campagna Search (migliora QS e CTR)
-- [x] **Aggiungere Callout Extensions** (es: "100% gratuito", "Arte collettiva", "Sostieni lo sport") - COMPLETATO (30 Maggio)
-- [ ] **Verificare "Acquisto" (ID 7497198169)** — è una conversione duplicata o separata?
-- [ ] **Keyword RARELY_SERVED** (14 su 33) — valutare se rimuovere o lasciare
-- [ ] **Verificare "Acquisto" (ID 7497198169)** — è una conversione duplicata o separata?
-- [ ] **Keyword RARELY_SERVED** (14 su 33) — valutare se rimuovere o lasciare
-
-### Priorità BASSA
-- [ ] Configurare Target CPA su Maximize Conversions dopo 30+ conversioni reali
-- [ ] Aggiungere negative keyword per filtrare traffico non pertinente
+- [ ] **Ottimizzare Asset Group PMax** — aggiungere immagini di qualità e descrizioni più specifiche.
+- [ ] **Aggiungere Sitelink Extensions** alla campagna Search (migliora QS e CTR).
+- [ ] **Keyword RARELY_SERVED** — valutare se rimuovere o mantenere.
 
 ---
 
@@ -120,18 +100,12 @@ webhook_receiver.py → Google Ads API → Upload conversione offline
 ## 🚀 Comandi Rapidi per la Prossima Sessione
 
 ```bash
-# Diagnostica completa account
+# Diagnostica completa account (Stato conversioni e campagne)
 cd /home/quantum/GDrive/amministrazione/Admin/Webdev/pixelwall/scripts/ads-api
 ./venv/bin/python3 diagnostics.py
 
 # Deep dive keyword e targeting
 ./venv/bin/python3 deep_dive.py
-
-# Report alerting + Telegram
-# Report alerting + Telegram
-TELEGRAM_BOT_TOKEN=$(grep TELEGRAM_BOT_TOKEN /home/quantum/GDrive/amministrazione/Admin/Webdev/pixelwall/private/madness-ads.env | cut -d= -f2) \
-TELEGRAM_CHAT_ID=1833724171 \
-./venv/bin/python3 google_ads_alerting.py
 
 # Log conversioni VPS
 ssh root@91.99.205.205 "tail -n 20 /root/ads-api/conversion_log.jsonl"
