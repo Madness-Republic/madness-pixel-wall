@@ -1,4 +1,4 @@
-# 📊 STATUS CAMPAGNE GOOGLE ADS — MADNESS REPUBLIC
+ # 📊 STATUS CAMPAGNE GOOGLE ADS — MADNESS REPUBLIC
 **Ultimo aggiornamento:** 4 Giugno 2026  
 **Account ID:** `212-225-1825` (Ad Grants) | **MCC:** `345-226-6958`
 
@@ -40,34 +40,32 @@ webhook_receiver.py → Google Ads API → Upload conversione offline
 
 ---
 
-## 📈 Stato Campagne & Conversioni (4 Giugno 2026)
+## 📈 Stato Campagne & Conversioni (10 Giugno 2026)
 
 | Campagna | ID | Tipo | Stato | Strategia |
 |----------|-----|------|-------|-----------|
-| Website traffic-Search-1 | 23563231848 | Search | 🟢 ENABLED | MAXIMIZE_CONVERSIONS |
+| Website traffic-Search-1 | 23563231848 | Search | 🟢 ENABLED | TARGET_SPEND (Maximize Clicks) |
 | Pixelwall-PMax-1 | 23518553228 | PMax | 🟢 ENABLED | MAXIMIZE_CONVERSIONS |
 | Pixelwall-PMax-Ita-Estero | 23518595507 | PMax | 🟢 ENABLED | MAXIMIZE_CONVERSIONS |
 | Pixelwall-PMax-US_GB | 23518645835 | PMax | 🟢 ENABLED | MAXIMIZE_CONVERSIONS |
 
-### Stato Azioni di Conversione (rilevato da UI Google Ads)
-- ⚠️ **Acquisto Pixel Wall** (`7483141093`): "Richiede attenzione". Ottimizzazione: **Principale**.
-- 🔴 **checkout_opened** (`AW-17847747259/uumuCJmQmrYcELuFvL5C`): "Inattivo" (in precedenza "Configurazione errata"). Ottimizzazione: **Principale**.
+### Stato Azioni di Conversione (rilevato da UI Google Ads & API)
+- 🟢 **Acquisto Pixel Wall** (`7483141093`): Uso: **Principale** (Attiva, in attesa di dati reali).
+- 🟢 **checkout_opened** (`7629867033`): Uso: **Principale**. Stato: **Nessuna conversione recente** (Verificata correttamente!).
+- ⏸️ **Acquisto** (`7497198169`): Uso: **Principale** (Inattiva/Messa in pausa).
 
 ---
 
-## 🔧 Interventi Eseguiti (4 Giugno 2026)
+## 🔧 Interventi Eseguiti
 
-### 1. Fix Google Consent Mode (GCM) per visitatori ricorrenti
-* **Problema:** I visitatori di ritorno che avevano già accettato i cookie in passato rimanevano bloccati con `ad_storage: denied` perché `initGoogleConsentMode()` ritornava in anticipo a causa della presenza del tag `gtag` globale inserito dalla pagina ospite.
-* **Risoluzione:** Aggiunto un controllo esplicito per forzare `updateGCM()` se il consenso è già presente in memoria.
-* **Repo allineati:** Modifica applicata sia nel submodule locale `gdpr/assets/js/consent_manager.js` di `madness-pixel-wall` sia nel repository sorgente standalone `madness-gdpr-consent-system` (commit `d6cdc39`).
+### 10 Giugno 2026 - Cambio Strategia Bidding per Superamento Cold Start
+* **Problema:** Tutte le campagne (comprese le PMax) erano bloccate a 0 impressioni e 0 click. La causa principale era lo stallo dell'algoritmo dovuto alla strategia `MAXIMIZE_CONVERSIONS` applicata su un account Ad Grants privo di storico conversioni (bidding deadlock).
+* **Risoluzione:** Eseguito lo script `update_bidding_strategy.py` per riportare la campagna Search principale (`Website traffic-Search-1`) alla strategia **`TARGET_SPEND` (Maximize Clicks)** con un limite massimo di CPC a **$2.00**.
+* **Effetto atteso:** Questo forzerà Google Ads a competere per i click, sbloccando la pubblicazione degli annunci. Una volta accumulate le prime conversioni (`checkout_opened` e acquisti), l'account avrà lo storico necessario per far funzionare correttamente anche le PMax.
 
-### 2. Risoluzione eventi duplicati "purchase" in Tag Assistant
-* **Problema:** Durante il processo di acquisto, Tag Assistant rilevava azioni doppie per la conversione `purchase`.
-* **Risoluzione:** Rimosso il blocco legacy redundante in `pixel-wall.js` che inviava un evento `'conversion'` parallelo e con lo stesso parametro `'send_to'` del moderno evento `'purchase'`. Ora viene inviato solo l'evento `'purchase'` corretto.
-
-### 3. Analisi eventi "checkout_opened"
-* **Verifica:** Tag Assistant rileva correttamente l'inizio del checkout con due chiamate distinte ma complementari: una a GA4 (`checkout_opened`) e una a Google Ads (`conversion` con tag `uumuCJmQmrYcELuFvL5C`). Questo comportamento è corretto per popolare sia le analytics che il tracciamento delle campagne senza duplicare i conteggi delle conversioni di Google Ads.
+### 4 Giugno 2026 - Fix GCM e Rimozione Duplicati
+* **GCM per visitatori ricorrenti:** Risolto bug in `consent_manager.js` (sia in pixel-wall che in `madness-gdpr-consent-system`).
+* **Rimozione eventi duplicati:** Eliminata chiamata legacy redundante in `pixel-wall.js` per evitare tracciamenti duplicati di `purchase` in Tag Assistant.
 
 ---
 

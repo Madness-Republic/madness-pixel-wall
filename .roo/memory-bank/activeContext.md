@@ -10,9 +10,10 @@
 - Servizio systemd `madness-webhook` attivo e in auto-restart
 
 ### Campagne Google Ads — Post Intervento
-- Tutte e 4 ENABLED con **MAXIMIZE_CONVERSIONS**
-- ✅ Micro-conversione `checkout_opened` creata su Google Ads e verificata.
-- 🔴 "checkout_opened" mostra "Inattivo" e "Acquisto Pixel Wall" mostra "Richiede attenzione" nella UI.
+- Tutte e 4 ENABLED.
+- ✅ Campagna Search principale (`Website traffic-Search-1`) impostata su **`TARGET_SPEND` (Maximize Clicks)** con cap CPC a **$2.00** per sbloccare lo stallo dovuto alle 0 conversioni storiche (cold start).
+- 🔴 Campagne PMax temporaneamente ferme a 0 impressioni in quanto impostate su `MAXIMIZE_CONVERSIONS` (richiedono uno storico di conversioni per iniziare ad erogare). La campagna Search fungerà da volano.
+- ✅ Micro-conversione `checkout_opened` creata su Google Ads e passata a "Nessuna conversione recente" (rilevata con successo).
 - ✅ Risolto bug GCM per visitatori ricorrenti in `consent_manager.js` (sia in pixel-wall che in `madness-gdpr-consent-system`).
 - ✅ Rimossa doppia chiamata di conversione `purchase` legacy in `pixel-wall.js`.
 
@@ -31,7 +32,7 @@
 - VPS: `ssh root@91.99.205.205`
 
 ## 🔜 Prossimi Check
-1. **Deploy su Aruba** — Verificare deploy FTP di `gdpr/assets/js/consent_manager.js` e `assets/js/pixel-wall.js`.
-2. **Verifica Stato Conversioni** — L'AI verificherà via script (`diagnostics.py`) se lo stato delle azioni di conversione in Google Ads è cambiato.
+1. **Verifica Impressioni e Click (48-72h):** Monitorare la campagna Search dopo il passaggio a Maximize Clicks per verificare la ripresa delle impressioni.
+2. **Deploy su Aruba** — Verificare deploy FTP di `gdpr/assets/js/consent_manager.js` e `assets/js/pixel-wall.js`.
 3. **Deploy community app** — Eseguire `npm run build` e fare deploy su Hetzner per attivare sitemap e robots in produzione.
 4. **Google Search Console** — Inviare `https://community.madnessrepublic.com/sitemap.xml` per accelerare l'indicizzazione.
