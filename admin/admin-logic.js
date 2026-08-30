@@ -121,13 +121,46 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label>${t('grid_height')}</label>
                         <input type="number" name="wall_height" value="${settings.wall.height}">
                     </div>
-                    <div class="form-group">
-                        <label>${t('land_price')}</label>
-                        <input type="number" step="0.01" name="land_rate" value="${settings.pricing.land_rate_cents / 100}">
-                    </div>
-                    <div class="form-group">
-                        <label>${t('ink_price')}</label>
-                        <input type="number" step="0.01" name="ink_rate" value="${settings.pricing.ink_rate_cents / 100}">
+                    <div style="margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; background: rgba(255,255,255,0.02); grid-column: span 2;">
+                        <h4 style="margin-top: 0; color: var(--accent);"><i class="fas fa-th-large"></i> Tariffazione Zone di Visibilità (EUR)</h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 10px;">
+                            <div>
+                                <h5 style="margin: 0 0 8px 0; color: #8b949e; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">FASCIA TOP (Y: 0-149)</h5>
+                                <div class="form-group" style="margin-bottom: 8px;">
+                                    <label>Suolo (al cm²)</label>
+                                    <input type="number" step="0.01" name="land_rate_top" value="${((settings.pricing.zones?.top?.land_rate_cents !== undefined) ? settings.pricing.zones.top.land_rate_cents : 15) / 100}">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Inchiostro (al px)</label>
+                                    <input type="number" step="0.01" name="ink_rate_top" value="${((settings.pricing.zones?.top?.ink_rate_cents !== undefined) ? settings.pricing.zones.top.ink_rate_cents : 10) / 100}">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h5 style="margin: 0 0 8px 0; color: #ffd700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">FASCIA VIP (Y: 150-279)</h5>
+                                <div class="form-group" style="margin-bottom: 8px;">
+                                    <label>Suolo (al cm²)</label>
+                                    <input type="number" step="0.01" name="land_rate_vip" value="${((settings.pricing.zones?.vip?.land_rate_cents !== undefined) ? settings.pricing.zones.vip.land_rate_cents : 20) / 100}">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Inchiostro (al px)</label>
+                                    <input type="number" step="0.01" name="ink_rate_vip" value="${((settings.pricing.zones?.vip?.ink_rate_cents !== undefined) ? settings.pricing.zones.vip.ink_rate_cents : 12) / 100}">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h5 style="margin: 0 0 8px 0; color: #8b949e; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">FASCIA STANDARD (Y: 280-399)</h5>
+                                <div class="form-group" style="margin-bottom: 8px;">
+                                    <label>Suolo (al cm²)</label>
+                                    <input type="number" step="0.01" name="land_rate_standard" value="${((settings.pricing.zones?.standard?.land_rate_cents !== undefined) ? settings.pricing.zones.standard.land_rate_cents : 10) / 100}">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Inchiostro (al px)</label>
+                                    <input type="number" step="0.01" name="ink_rate_standard" value="${((settings.pricing.zones?.standard?.ink_rate_cents !== undefined) ? settings.pricing.zones.standard.ink_rate_cents : 8) / 100}">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>${t('maintenance')}</label>
@@ -210,8 +243,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     pricing: {
                         ...settings.pricing,
-                        land_rate_cents: Math.round(parseFloat(results.land_rate) * 100),
-                        ink_rate_cents: Math.round(parseFloat(results.ink_rate) * 100)
+                        land_rate_cents: Math.round(parseFloat(results.land_rate_standard || 0.10) * 100),
+                        ink_rate_cents: Math.round(parseFloat(results.ink_rate_standard || 0.08) * 100),
+                        zones: {
+                            top: {
+                                land_rate_cents: Math.round(parseFloat(results.land_rate_top) * 100),
+                                ink_rate_cents: Math.round(parseFloat(results.ink_rate_top) * 100)
+                            },
+                            vip: {
+                                land_rate_cents: Math.round(parseFloat(results.land_rate_vip) * 100),
+                                ink_rate_cents: Math.round(parseFloat(results.ink_rate_vip) * 100)
+                            },
+                            standard: {
+                                land_rate_cents: Math.round(parseFloat(results.land_rate_standard) * 100),
+                                ink_rate_cents: Math.round(parseFloat(results.ink_rate_standard) * 100)
+                            }
+                        }
                     },
                     maintenance_mode: results.maintenance === "1"
                 };

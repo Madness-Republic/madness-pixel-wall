@@ -60,19 +60,102 @@ try {
 
         $width = ($maxX - $minX) + 1;
         $height = ($maxY - $minY) + 1;
-        $areaCm2 = $width * $height; // 1 pixel = 1 cm2 nella tua logica attuale
+
+        // --- ZONE AND TIER PRICING CALCULATION ---
+        $wallDataFile = __DIR__ . '/../data/wall_data.json';
+        $wallData = [];
+        if (file_exists($wallDataFile)) {
+            $wallData = json_decode(file_get_contents($wallDataFile), true) ?: [];
+        }
+
+        $presetFile = __DIR__ . '/../data/wall_preset.json';
+        $presetData = [];
+        if (($settings['wall']['use_preset'] ?? false) && file_exists($presetFile)) {
+            $presetData = json_decode(file_get_contents($presetFile), true) ?: [];
+        }
+
+        // Build forbidden set
+        $forbiddenSet = [];
+        $border = (int)($settings['wall']['preset_padding'] ?? 4);
+        if (!empty($presetData)) {
+            foreach ($presetData as $key => $val) {
+                $parts = explode(',', $key);
+                if (count($parts) === 2) {
+                    $px = (int)$parts[0];
+                    $py = (int)$parts[1];
+                    for ($dx = -$border; $dx <= $border; $dx++) {
+                        for ($dy = -$border; $dy <= $border; $dy++) {
+                            $forbiddenSet[($px + $dx) . ',' . ($py + $dy)] = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        $userPixelMap = [];
+        foreach ($pixels as $p) {
+            $userPixelMap[$p->x . ',' . $p->y] = true;
+        }
+
+        $netAreaTop = 0;
+        $netAreaVip = 0;
+        $netAreaStandard = 0;
+
+        for ($y = $minY; $y <= $maxY; $y++) {
+            $zone = 'standard';
+            if ($y < 150) $zone = 'top';
+            else if ($y < 280) $zone = 'vip';
+
+            for ($x = $minX; $x <= $maxX; $x++) {
+                $key = $x . ',' . $y;
+                $isOccupied = (!isset($userPixelMap[$key]) && 
+                               (isset($wallData[$key]) || isset($forbiddenSet[$key])));
+                if (!$isOccupied) {
+                    if ($zone === 'top') $netAreaTop++;
+                    else if ($zone === 'vip') $netAreaVip++;
+                    else $netAreaStandard++;
+                }
+            }
+        }
+
+        $inkTop = 0;
+        $inkVip = 0;
+        $inkStandard = 0;
+
+        foreach ($pixels as $p) {
+            if ($p->y < 150) $inkTop++;
+            else if ($p->y < 280) $inkVip++;
+            else $inkStandard++;
+        }
+
+        $zones = $settings['pricing']['zones'] ?? [];
+        
+        $landRateTop = $zones['top']['land_rate_cents'] ?? 15;
+        $inkRateTop = $zones['top']['ink_rate_cents'] ?? 10;
+
+        $landRateVip = $zones['vip']['land_rate_cents'] ?? 20;
+        $inkRateVip = $zones['vip']['ink_rate_cents'] ?? 12;
+
+        $landRateStandard = $zones['standard']['land_rate_cents'] ?? 10;
+        $inkRateStandard = $zones['standard']['ink_rate_cents'] ?? 8;
+
+        $totalSold = count($wallData);
+        $landMultiplier = 1.0;
+        if ($totalSold > 250000) {
+            $landMultiplier = 1.5;
+        } else if ($totalSold > 100000) {
+            $landMultiplier = 1.25;
+        }
+
+        $landCostCents = ($netAreaTop * $landRateTop + $netAreaVip * $landRateVip + $netAreaStandard * $landRateStandard) * $landMultiplier;
+        $inkCostCents = $inkTop * $inkRateTop + $inkVip * $inkRateVip + $inkStandard * $inkRateStandard;
+
+        $netAmountCents = ceil($landCostCents + $inkCostCents);
+        $areaCm2 = $netAreaTop + $netAreaVip + $netAreaStandard;
     } else {
         $areaCm2 = 0;
+        $netAmountCents = 0;
     }
-
-    // Tariffe (in CENTESIMI per Stripe) - Loaded from Settings
-    $landRateCents = $settings['pricing']['land_rate_cents'] ?? 20;
-    $inkRateCents = $settings['pricing']['ink_rate_cents'] ?? 30;
-
-    $landCost = $areaCm2 * $landRateCents;
-    $inkCost = $pixelCount * $inkRateCents;
-
-    $netAmountCents = $landCost + $inkCost;
 
     // --- FEE PASSING: Customer pays Stripe Fees ---
     $stripeFixedCents = $settings['pricing']['stripe_fixed_cents'] ?? 25;

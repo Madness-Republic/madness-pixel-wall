@@ -77,9 +77,9 @@ webhook_receiver.py → Google Ads API → Upload conversione offline
 - [ ] **Monitoraggio logs VPS:** Eseguire `tail -n 20 /root/ads-api/conversion_log.jsonl` per verificare la ricezione delle conversioni reali sul server.
 
 ### Priorità MEDIA
-- [ ] **Ottimizzare Asset Group PMax** — aggiungere immagini di qualità e descrizioni più specifiche.
-- [ ] **Aggiungere Sitelink Extensions** alla campagna Search (migliora QS e CTR).
-- [ ] **Keyword RARELY_SERVED** — valutare se rimuovere o mantenere.
+- [ ] Ottimizzare Asset Group PMax — aggiungere immagini di qualità e descrizioni più specifiche.
+- [x] Aggiungere Sitelink Extensions alla campagna Search (migliora QS e CTR).
+- [x] Keyword RARELY_SERVED — rimosse/messe in pausa tramite script.
 
 ---
 

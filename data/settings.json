@@ -8,6 +8,20 @@
     "pricing": {
         "land_rate_cents": 10,
         "ink_rate_cents": 10,
+        "zones": {
+            "top": {
+                "land_rate_cents": 15,
+                "ink_rate_cents": 10
+            },
+            "vip": {
+                "land_rate_cents": 20,
+                "ink_rate_cents": 12
+            },
+            "standard": {
+                "land_rate_cents": 10,
+                "ink_rate_cents": 8
+            }
+        },
         "stripe_fixed_cents": 25,
         "stripe_percent": 0.015,
         "min_charge_cents": 50

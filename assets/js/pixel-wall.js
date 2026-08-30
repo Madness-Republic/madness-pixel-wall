@@ -608,18 +608,15 @@ class PixelWall {
                 this.saveSession();
                 this.updateStats();
                 this.render();
-                clearModal.classList.remove('active');
-                setTimeout(() => clearModal.style.display = 'none', 300);
+                window.hideModal(clearModal);
             };
             document.getElementById('clear-cancel-btn').onclick = () => {
-                clearModal.classList.remove('active');
-                setTimeout(() => clearModal.style.display = 'none', 300);
+                window.hideModal(clearModal);
             };
             // Close on outside click
             clearModal.onclick = (e) => {
                 if (e.target === clearModal) {
-                    clearModal.classList.remove('active');
-                    setTimeout(() => clearModal.style.display = 'none', 300);
+                    window.hideModal(clearModal);
                 }
             };
         }
@@ -760,23 +757,13 @@ class PixelWall {
                         showError(t('error-image-dimensions') + " (Max 100cm)");
                     }
 
-                    if (typeof window.hideModal === 'function') {
-                        window.hideModal(sizeModal);
-                    } else {
-                        sizeModal.classList.remove('active');
-                        sizeModal.style.display = 'none';
-                    }
+                    window.hideModal(sizeModal);
                     this.finalizeImageProcessing(img, heightCm);
                     cleanup();
                 };
 
                 const onCancel = () => {
-                    if (typeof window.hideModal === 'function') {
-                        window.hideModal(sizeModal);
-                    } else {
-                        sizeModal.classList.remove('active');
-                        sizeModal.style.display = 'none';
-                    }
+                    window.hideModal(sizeModal);
                     cleanup();
                 };
 
@@ -788,12 +775,7 @@ class PixelWall {
                 confirmBtn.onclick = onConfirm;
                 cancelBtn.onclick = onCancel;
 
-                if (typeof window.showModal === 'function') {
-                    window.showModal(sizeModal);
-                } else {
-                    sizeModal.style.display = 'flex';
-                    setTimeout(() => sizeModal.classList.add('active'), 10);
-                }
+                window.showModal(sizeModal);
             };
             img.onerror = () => {
                 showError(t('error-image-load'));
@@ -903,8 +885,7 @@ class PixelWall {
         const btnText = document.getElementById('button-text');
         const messageDiv = document.getElementById('payment-message');
 
-        modal.classList.add('active');
-        modal.style.display = 'flex';
+        window.showModal(modal);
 
         // Recalculate Total
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -917,13 +898,63 @@ class PixelWall {
         });
         const width = (maxX - minX) + 1;
         const height = (maxY - minY + 1);
-        const area = width * height;
-        const pixels = this.pixelMap.size;
+        // area and pixels are not needed directly - computed per-zone below
 
-        // --- FEE PASSING CALCULATION ---
-        const landRate = this.settings?.pricing?.land_rate_cents ? this.settings.pricing.land_rate_cents / 100 : 0.20;
-        const inkRate = this.settings?.pricing?.ink_rate_cents ? this.settings.pricing.ink_rate_cents / 100 : 0.30;
-        const netAmount = (area * landRate) + (pixels * inkRate);
+        // --- ZONE AND TIER PRICING CALCULATION ---
+        let netAreaTop = 0;
+        let netAreaVip = 0;
+        let netAreaStandard = 0;
+
+        for (let y = minY; y <= maxY; y++) {
+            let zone = 'standard';
+            if (y < 150) zone = 'top';
+            else if (y < 280) zone = 'vip';
+
+            for (let x = minX; x <= maxX; x++) {
+                const key = `${x},${y}`;
+                const isOccupied = (!this.pixelMap.has(key) && 
+                                    ((this.confirmedMap && this.confirmedMap.has(key)) || 
+                                     (this.forbiddenSet && this.forbiddenSet.has(key))));
+                if (!isOccupied) {
+                    if (zone === 'top') netAreaTop++;
+                    else if (zone === 'vip') netAreaVip++;
+                    else netAreaStandard++;
+                }
+            }
+        }
+
+        let inkTop = 0;
+        let inkVip = 0;
+        let inkStandard = 0;
+        this.pixelMap.forEach((_, key) => {
+            const [x, y] = key.split(',').map(Number);
+            if (y < 150) inkTop++;
+            else if (y < 280) inkVip++;
+            else inkStandard++;
+        });
+
+        const zones = this.settings?.pricing?.zones || {};
+        
+        const landRateTop = (zones.top?.land_rate_cents !== undefined ? zones.top.land_rate_cents : 15) / 100;
+        const inkRateTop = (zones.top?.ink_rate_cents !== undefined ? zones.top.ink_rate_cents : 10) / 100;
+
+        const landRateVip = (zones.vip?.land_rate_cents !== undefined ? zones.vip.land_rate_cents : 20) / 100;
+        const inkRateVip = (zones.vip?.ink_rate_cents !== undefined ? zones.vip.ink_rate_cents : 12) / 100;
+
+        const landRateStandard = (zones.standard?.land_rate_cents !== undefined ? zones.standard.land_rate_cents : 10) / 100;
+        const inkRateStandard = (zones.standard?.ink_rate_cents !== undefined ? zones.standard.ink_rate_cents : 8) / 100;
+
+        const totalSold = this.confirmedMap.size + (this.presetMap ? this.presetMap.size : 0);
+        let landMultiplier = 1.0;
+        if (totalSold > 250000) {
+            landMultiplier = 1.5;
+        } else if (totalSold > 100000) {
+            landMultiplier = 1.25;
+        }
+
+        const netAmount = ((netAreaTop * landRateTop + netAreaVip * landRateVip + netAreaStandard * landRateStandard) * landMultiplier) +
+                          (inkTop * inkRateTop + inkVip * inkRateVip + inkStandard * inkRateStandard);
+
         const fixedFee = this.settings?.pricing?.stripe_fixed_cents !== undefined ? this.settings.pricing.stripe_fixed_cents / 100 : 0.25;
         const percentFee = this.settings?.pricing?.stripe_percent !== undefined ? this.settings.pricing.stripe_percent : 0.015;
         const minCharge = this.settings?.pricing?.min_charge_cents !== undefined ? this.settings.pricing.min_charge_cents / 100 : 0.50;
@@ -1285,10 +1316,7 @@ class PixelWall {
             }
         } else {
             // console.log("Payment not succeeded yet:", paymentIntent ? paymentIntent.status : "unknown");
-            if (modal) {
-                modal.classList.remove('active');
-                modal.style.display = 'none';
-            }
+                window.hideModal(modal);
         }
     }
 
@@ -1932,40 +1960,64 @@ class PixelWall {
         const height = maxY - minY + 1;
         this.boundingBox = { x: minX, y: minY, w: width, h: height };
 
-        // --- GROSS AREA ---
-        const grossArea = width * height;
+        // --- ZONE AND TIER PRICING CALCULATION ---
+        let netAreaTop = 0;
+        let netAreaVip = 0;
+        let netAreaStandard = 0;
 
-        // --- NET AREA OPTIMIZATION (Fair Pricing) ---
-        // Subtract pixels in the bounding box that are ALREADY occupied by others (confirmedMap)
-        // or by presets (presetMap).
-        // The user pays land tax only for FREE space they occupy/enclose.
-
-        let occupiedCount = 0;
-
-        // We iterate the bounding box. Since max grid is small (1000x400), this is performant enough (~10ms max)
         for (let y = minY; y <= maxY; y++) {
+            let zone = 'standard';
+            if (y < 150) zone = 'top';
+            else if (y < 280) zone = 'vip';
+
             for (let x = minX; x <= maxX; x++) {
                 const key = `${x},${y}`;
-                // If it's NOT our pixel
-                if (!this.pixelMap.has(key)) {
-                    // Check if it's occupied by others (confirmed) OR is a forbidden area (preset + border)
-                    if ((this.confirmedMap && this.confirmedMap.has(key)) ||
-                        (this.forbiddenSet && this.forbiddenSet.has(key))) {
-                        occupiedCount++;
-                    }
+                const isOccupied = (!this.pixelMap.has(key) && 
+                                    ((this.confirmedMap && this.confirmedMap.has(key)) || 
+                                     (this.forbiddenSet && this.forbiddenSet.has(key))));
+                if (!isOccupied) {
+                    if (zone === 'top') netAreaTop++;
+                    else if (zone === 'vip') netAreaVip++;
+                    else netAreaStandard++;
                 }
             }
         }
 
-        const netArea = Math.max(0, grossArea - occupiedCount);
-        const pixelParams = this.pixelMap.size;
+        let inkTop = 0;
+        let inkVip = 0;
+        let inkStandard = 0;
+        this.pixelMap.forEach((_, key) => {
+            const [x, y] = key.split(',').map(Number);
+            if (y < 150) inkTop++;
+            else if (y < 280) inkVip++;
+            else inkStandard++;
+        });
 
-        // --- HYBRID PRICING MODEL ---
-        const landRate = this.settings?.pricing?.land_rate_cents ? this.settings.pricing.land_rate_cents / 100 : 0.20;
-        const inkRate = this.settings?.pricing?.ink_rate_cents ? this.settings.pricing.ink_rate_cents / 100 : 0.30;
-        const landCost = netArea * landRate;
-        const inkCost = pixelParams * inkRate;
+        const zones = this.settings?.pricing?.zones || {};
+        
+        const landRateTop = (zones.top?.land_rate_cents !== undefined ? zones.top.land_rate_cents : 15) / 100;
+        const inkRateTop = (zones.top?.ink_rate_cents !== undefined ? zones.top.ink_rate_cents : 10) / 100;
+
+        const landRateVip = (zones.vip?.land_rate_cents !== undefined ? zones.vip.land_rate_cents : 20) / 100;
+        const inkRateVip = (zones.vip?.ink_rate_cents !== undefined ? zones.vip.ink_rate_cents : 12) / 100;
+
+        const landRateStandard = (zones.standard?.land_rate_cents !== undefined ? zones.standard.land_rate_cents : 10) / 100;
+        const inkRateStandard = (zones.standard?.ink_rate_cents !== undefined ? zones.standard.ink_rate_cents : 8) / 100;
+
+        const totalSold = this.confirmedMap.size + (this.presetMap ? this.presetMap.size : 0);
+        let landMultiplier = 1.0;
+        if (totalSold > 250000) {
+            landMultiplier = 1.5;
+        } else if (totalSold > 100000) {
+            landMultiplier = 1.25;
+        }
+
+        const landCost = (netAreaTop * landRateTop + netAreaVip * landRateVip + netAreaStandard * landRateStandard) * landMultiplier;
+        const inkCost = inkTop * inkRateTop + inkVip * inkRateVip + inkStandard * inkRateStandard;
         const totalPrice = landCost + inkCost;
+
+        const netArea = netAreaTop + netAreaVip + netAreaStandard;
+        const pixelParams = this.pixelMap.size;
 
         document.querySelectorAll('.val-pixels-count').forEach(el => el.textContent = `${netArea.toLocaleString()} cm² (${pixelParams} px)`);
         document.querySelectorAll('.val-price-count').forEach(el => el.textContent = `€ ${totalPrice.toFixed(2)}`);
@@ -2458,13 +2510,18 @@ window.madnessWall = new PixelWall();
 // Functions to handle modals (Global scope)
 window.showModal = function (m) {
     if (!m) return;
-    m.style.display = 'flex';
-    setTimeout(() => m.classList.add('active'), 10);
+    document.body.classList.add('modal-open');
+    requestAnimationFrame(() => m.classList.add('active'));
 }
 window.hideModal = function (m) {
     if (!m) return;
     m.classList.remove('active');
-    setTimeout(() => m.style.display = 'none', 300);
+    setTimeout(() => {
+        const anyActive = document.querySelector('.modal-overlay.active');
+        if (!anyActive) {
+            document.body.classList.remove('modal-open');
+        }
+    }, 200);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2490,28 +2547,24 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         const iframe = wallModal.querySelector('iframe');
         const introText = wallModal.querySelector('p[data-i18n="pw-wall-intro"]');
-        if (iframe) iframe.src = "pages/wordcloud.html";
         if (introText) introText.style.display = 'block';
         showModal(wallModal);
+        if (iframe && iframe.src !== "pages/wordcloud.html") {
+            setTimeout(() => { iframe.src = "pages/wordcloud.html"; }, 150);
+        }
     };
 
     // Expose function for HUD clicks
     window.openDetailsModal = (type) => {
         const iframe = wallModal.querySelector('iframe');
         const introText = wallModal.querySelector('p[data-i18n="pw-wall-intro"]');
+        const targetSrc = (type === 'gold') ? "pages/winners.php" : (type === 'silver') ? "pages/winners.php#silver" : "pages/wordcloud.html";
 
-        if (type === 'gold') {
-            iframe.src = "pages/winners.php";
-            if (introText) introText.style.display = 'none';
-        } else if (type === 'silver') {
-            iframe.src = "pages/winners.php#silver";
-            if (introText) introText.style.display = 'none';
-        } else {
-            // Default Wall
-            iframe.src = "pages/wordcloud.html";
-            if (introText) introText.style.display = 'block';
-        }
+        if (introText) introText.style.display = (type === 'gold' || type === 'silver') ? 'none' : 'block';
         showModal(wallModal);
+        if (iframe && iframe.src !== targetSrc) {
+            setTimeout(() => { iframe.src = targetSrc; }, 150);
+        }
     };
 
     const hudGold = document.getElementById('hud-gold');
@@ -2588,17 +2641,27 @@ document.addEventListener('DOMContentLoaded', () => {
     window.setLanguage = function (lang) {
         const toggleBtn = document.getElementById('lang-toggle');
 
+        const getZonePricing = (zone, type) => {
+            const zones = window.madnessWall?.settings?.pricing?.zones;
+            if (zones && zones[zone] && zones[zone][type] !== undefined) {
+                return (zones[zone][type] / 100).toFixed(2);
+            }
+            // Fallbacks
+            if (zone === 'top') return type === 'land_rate_cents' ? '0.15' : '0.10';
+            if (zone === 'vip') return type === 'land_rate_cents' ? '0.20' : '0.12';
+            return type === 'land_rate_cents' ? '0.10' : '0.08';
+        };
+
         // Prepare replacement data
-        const settings = window.madnessWall ? {
-            land_price_eur: (window.madnessWall.settings?.pricing?.land_rate_cents / 100 || 0.20).toFixed(2),
-            ink_price_eur: (window.madnessWall.settings?.pricing?.ink_rate_cents / 100 || 0.30).toFixed(2),
-            wall_width_m: (window.madnessWall.gridWidth / 100 || 10).toFixed(0),
-            wall_height_m: (window.madnessWall.gridHeight / 100 || 4).toFixed(0)
-        } : {
-            land_price_eur: "0.20",
-            ink_price_eur: "0.30",
-            wall_width_m: "10",
-            wall_height_m: "4"
+        const settings = {
+            land_price_top: getZonePricing('top', 'land_rate_cents'),
+            ink_price_top: getZonePricing('top', 'ink_rate_cents'),
+            land_price_vip: getZonePricing('vip', 'land_rate_cents'),
+            ink_price_vip: getZonePricing('vip', 'ink_rate_cents'),
+            land_price_standard: getZonePricing('standard', 'land_rate_cents'),
+            ink_price_standard: getZonePricing('standard', 'ink_rate_cents'),
+            wall_width_m: (window.madnessWall ? window.madnessWall.gridWidth / 100 : 10).toFixed(0),
+            wall_height_m: (window.madnessWall ? window.madnessWall.gridHeight / 100 : 4).toFixed(0)
         };
 
         document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -2683,7 +2746,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('message', (event) => {
         if (event.data === 'closeWallModal') {
             const modal = document.getElementById('wall-modal');
-            if (modal) modal.style.display = 'none';
+            if (modal) window.hideModal(modal);
         }
     });
 

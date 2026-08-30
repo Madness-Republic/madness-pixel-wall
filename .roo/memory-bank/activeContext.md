@@ -24,15 +24,27 @@
 - ✅ Cross-domain tracking configurato su GA4: "Contiene: madnessrepublic.com"
 - ✅ Title template SEO: `%s | Madness Republic Community`
 
+### Modello di Prezzo Dinamico (Zoning & Scaglioni) — 8 Agosto 2026 ✅ COMPLETATO
+- ✅ **Zoning Y (Top, VIP, Standard)**: Prezzi suolo e inchiostro suddivisi in base all'altezza della coordinata.
+- ✅ **Scaglioni Progressivi (FOMO)**: Rincari dinamici del suolo (+25%, +50%) in base all'area totale occupata (confermati + preset).
+- ✅ **Admin Panel Integrato**: Exposti i 6 parametri di configurazione dei prezzi delle zone in `/admin/index.php#settings`.
+- ✅ **Traduzioni Modale Aggiornate**: I testi della modale "Perché questo sistema?" illustrano chiaramente la ripartizione dei costi.
+- ✅ **Backend Intent Sicuro**: La creazione del PaymentIntent Stripe valida i prezzi ed esegue il calcolo in totale sicurezza lato server.
+
 ### File chiave
 - `scripts/ads-api/STATUS_CAMPAGNE.md` — riepilogo campagne
 - `community_v2.0/src/app/layout.tsx` — Google Tags
 - `community_v2.0/src/app/sitemap.ts` — sitemap.xml automatica
 - `community_v2.0/src/app/robots.ts` — robots.txt automatico
+- `assets/js/pixel-wall.js` — Core frontend del canvas con calcolo costi a zone/scaglioni
+- `api/create-payment-intent.php` — Calcolo prezzi Stripe sicuro lato backend
+- `admin/admin-logic.js` — Form di gestione prezzi zone admin
+- `assets/js/translations.js` — Traduzioni del nuovo listino prezzi zone/scaglioni
 - VPS: `ssh root@91.99.205.205`
 
 ## 🔜 Prossimi Check
 1. **Verifica Impressioni e Click (48-72h):** Monitorare la campagna Search dopo il passaggio a Maximize Clicks per verificare la ripresa delle impressioni.
-2. **Deploy su Aruba** — Verificare deploy FTP di `gdpr/assets/js/consent_manager.js` e `assets/js/pixel-wall.js`.
+2. **Deploy su Aruba** — Verificare deploy FTP di `gdpr/assets/js/consent_manager.js`, `assets/js/pixel-wall.js`, `assets/js/translations.js`, `api/create-payment-intent.php`, `data/settings.json`, `admin/admin-logic.js`.
 3. **Deploy community app** — Eseguire `npm run build` e fare deploy su Hetzner per attivare sitemap e robots in produzione.
 4. **Google Search Console** — Inviare `https://community.madnessrepublic.com/sitemap.xml` per accelerare l'indicizzazione.
+

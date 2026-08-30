@@ -80,7 +80,7 @@ require_once 'includes/security_headers.php';
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;700&family=Source+Sans+Pro:wght@400;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/pixel-wall.css?v=2.3.2">
+    <link rel="stylesheet" href="assets/css/pixel-wall.css?v=2.3.6">
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
 
     <?php
@@ -535,9 +535,9 @@ require_once 'includes/security_headers.php';
         <img id="lightbox-img" src="" alt="Full view">
     </div>
 
-    <script src="assets/js/translations.js?v=2.3.3" nonce="<?php echo $nonce; ?>"></script>
-    <script src="assets/js/error_modal.js?v=2.3.3" nonce="<?php echo $nonce; ?>"></script>
-    <script src="assets/js/pixel-wall.js?v=2.3.3" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/translations.js?v=2.3.6" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/error_modal.js?v=2.3.6" nonce="<?php echo $nonce; ?>"></script>
+    <script src="assets/js/pixel-wall.js?v=2.3.6" nonce="<?php echo $nonce; ?>"></script>
 
     <?php
     if (file_exists('gdpr/banner.php')) {
